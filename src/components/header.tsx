@@ -12,7 +12,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import { LogOut, Menu, Settings, Blocks } from "lucide-react";
@@ -55,12 +61,13 @@ export function Header() {
           </SheetTrigger>
           <SheetContent side="left" className="w-full max-w-xs p-0">
             <div className="flex h-full flex-col">
-              <div className="p-4 border-b">
+              <SheetHeader className="border-b p-4 text-left">
+                <SheetTitle className="sr-only">Menu</SheetTitle>
                 <Link href="/">
-                    <Logo />
+                  <Logo />
                 </Link>
-              </div>
-              <nav className="flex flex-col p-4 space-y-2">
+              </SheetHeader>
+              <nav className="flex flex-col space-y-2 p-4">
                 <NavLinks mobile />
               </nav>
             </div>
