@@ -21,7 +21,7 @@ const SellerSchema = z.object({
     price: z.number().describe("The price of the product in INR."),
     isOnline: z.boolean().describe("Whether the seller is online or a physical store."),
     address: z.string().optional().describe("The city and country if it's a physical store."),
-    link: z.string().url().optional().describe("A plausible URL to the product page if the seller is online. Omit for physical stores."),
+    link: z.string().optional().describe("A plausible URL to the product page if the seller is online. Omit for physical stores."),
 });
 
 const FindSellersOutputSchema = z.object({
