@@ -5,3 +5,12 @@ runConfig:
   # Increase this value if you'd like to automatically spin up
   # more instances in response to increased traffic.
   maxInstances: 1
+  # Configure the startup probe to be more lenient, allowing the Next.js
+  # server more time to become available.
+  startupProbe:
+    initialDelaySeconds: 2
+    timeoutSeconds: 15
+    periodSeconds: 5
+    failureThreshold: 12
+    httpGet:
+      path: /
