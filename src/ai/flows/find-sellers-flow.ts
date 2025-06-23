@@ -10,7 +10,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 
-export const FindSellersInputSchema = z.object({
+const FindSellersInputSchema = z.object({
   productName: z.string().describe('The name of the product.'),
   modelName: z.string().describe('The model name or number of the product.'),
 });
@@ -23,7 +23,7 @@ const SellerSchema = z.object({
     address: z.string().optional().describe("The city and country if it's a physical store."),
 });
 
-export const FindSellersOutputSchema = z.object({
+const FindSellersOutputSchema = z.object({
     sellers: z.array(SellerSchema).describe("A list of 2 to 4 potential sellers for the product."),
 });
 export type FindSellersOutput = z.infer<typeof FindSellersOutputSchema>;
