@@ -41,7 +41,7 @@ export function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
   const lowestPrice = product.sellers.length > 0 ? Math.min(...product.sellers.map((s) => s.price)) : 0;
   
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(price);
+    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(price);
   };
 
   return (

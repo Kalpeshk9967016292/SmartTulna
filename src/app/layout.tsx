@@ -7,13 +7,13 @@ import AuthProvider from "@/components/auth-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 
 const fontPoppins = Poppins({
-  subsets: ["latin"],
+  subsets: ["latin", "devanagari"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-poppins",
 });
 
 const fontPTSans = PT_Sans({
-  subsets: ["latin"],
+  subsets: ["latin", "devanagari"],
   weight: ["400", "700"],
   variable: "--font-pt-sans",
 });
@@ -30,11 +30,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet" />
-      </head>
+      <head />
       <body
         className={cn(
           "min-h-screen bg-background font-body antialiased",
