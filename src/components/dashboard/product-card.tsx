@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { Product } from "@/lib/types";
 import { format } from "date-fns";
-import { MoreVertical, Edit, Trash2, Globe, Store } from "lucide-react";
+import { MoreVertical, Edit, Trash2, Globe, Store, BarChart2 } from "lucide-react";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -29,6 +29,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
   } from "@/components/ui/alert-dialog"
+import Link from "next/link";
 
 interface ProductCardProps {
   product: Product;
@@ -129,8 +130,14 @@ export function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
           </AccordionItem>
         </Accordion>
       </CardContent>
-      <CardFooter>
-        <p className="text-xs text-muted-foreground w-full">Added on {format(product.createdAt, "PPP")}</p>
+      <CardFooter className="flex items-center justify-between pt-6">
+        <p className="text-xs text-muted-foreground">Added on {format(product.createdAt, "PPP")}</p>
+        <Button asChild variant="outline" size="sm">
+          <Link href={`/product/${product.id}`}>
+            <BarChart2 className="mr-2 h-4 w-4" />
+            Compare
+          </Link>
+        </Button>
       </CardFooter>
     </Card>
   );
