@@ -18,9 +18,8 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { Product } from "@/lib/types";
-import { PlusCircle, Trash2, Loader2, Sparkles } from "lucide-react";
+import { PlusCircle, Trash2, Loader2 } from "lucide-react";
 import { Separator } from "../ui/separator";
-import { findSellers } from "@/ai/flows/find-sellers-flow";
 import { v4 as uuidv4 } from 'uuid';
 import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
@@ -63,7 +62,6 @@ interface ProductFormProps {
 
 export function ProductForm({ isOpen, setIsOpen, product, onSave }: ProductFormProps) {
   const { toast } = useToast();
-  const [isFindingSellers, setIsFindingSellers] = useState(false);
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(formSchema),
@@ -104,34 +102,6 @@ export function ProductForm({ isOpen, setIsOpen, product, onSave }: ProductFormP
         }
     }
   }, [product, isOpen, form]);
-
-  const handleFindSellers = async () => {
-    const { name, model } = form.getValues();
-    if (!name || !model) {
-      toast({
-        title: "Missing Information",
-        description: "Please enter a Product Name and Model Name first.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsFindingSellers(true);
-    try {
-      const result = await findSellers({ productName: name, modelName: model });
-      const sellersWithIds = result.sellers.map(s => ({ ...s, id: uuidv4() }));
-      form.setValue('sellers', sellersWithIds, { shouldValidate: true });
-    } catch (error) {
-      console.error("Error finding sellers:", error);
-      toast({
-        title: "AI Error",
-        description: "Could not fetch sellers at this time. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsFindingSellers(false);
-    }
-  };
 
   const onSubmit = (data: ProductFormValues) => {
     const newProduct: Product = {
@@ -203,13 +173,7 @@ export function ProductForm({ isOpen, setIsOpen, product, onSave }: ProductFormP
             
             {/* Sellers */}
             <div>
-              <div className="flex justify-between items-center mb-2">
-                <h3 className="text-lg font-medium font-headline">Sellers</h3>
-                <Button type="button" variant="outline" size="sm" onClick={handleFindSellers} disabled={isFindingSellers}>
-                  {isFindingSellers ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Sparkles className="mr-2 h-4 w-4 text-accent" />}
-                  Find Sellers with AI
-                </Button>
-              </div>
+              <h3 className="text-lg font-medium font-headline mb-2">Sellers</h3>
               <div className="space-y-4">
                 {sellerFields.map((field, index) => {
                     const isOnline = form.watch(`sellers.${index}.isOnline`);
