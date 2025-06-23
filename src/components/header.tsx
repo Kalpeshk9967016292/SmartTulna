@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils";
 import { LogOut, Menu, Settings, Blocks } from "lucide-react";
 import { Logo } from "./logo";
 import { ThemeToggle } from "./theme-toggle";
+import { useState } from "react";
 
 const navLinks = [
   { href: "/dashboard", label: "Dashboard", icon: <Blocks className="h-4 w-4" /> },
@@ -33,6 +34,7 @@ const navLinks = [
 export function Header() {
   const { user, logout } = useAuth();
   const router = useRouter();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -52,7 +54,7 @@ export function Header() {
         </div>
 
         {/* Mobile Nav */}
-        <Sheet>
+        <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon" className="md:hidden">
               <Menu />
@@ -63,12 +65,12 @@ export function Header() {
             <div className="flex h-full flex-col">
               <SheetHeader className="border-b p-4 text-left">
                 <SheetTitle className="sr-only">Menu</SheetTitle>
-                <Link href="/">
+                <Link href="/" onClick={() => setIsMobileMenuOpen(false)}>
                   <Logo />
                 </Link>
               </SheetHeader>
               <nav className="flex flex-col space-y-2 p-4">
-                <NavLinks mobile />
+                <NavLinks mobile onLinkClick={() => setIsMobileMenuOpen(false)} />
               </nav>
             </div>
           </SheetContent>
@@ -106,7 +108,7 @@ export function Header() {
 }
 
 
-function NavLinks({ mobile = false }: { mobile?: boolean }) {
+function NavLinks({ mobile = false, onLinkClick }: { mobile?: boolean, onLinkClick?: () => void }) {
   const pathname = usePathname();
   return (
     <>
@@ -114,6 +116,7 @@ function NavLinks({ mobile = false }: { mobile?: boolean }) {
         <Link
           key={href}
           href={href}
+          onClick={onLinkClick}
           className={cn(
             "transition-colors hover:text-primary",
             pathname === href ? "text-primary font-semibold" : "text-muted-foreground",
