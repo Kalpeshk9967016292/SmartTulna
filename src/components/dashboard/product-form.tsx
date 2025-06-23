@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -18,10 +18,15 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { Product } from "@/lib/types";
-import { PlusCircle, Trash2, Loader2 } from "lucide-react";
+import { PlusCircle, Trash2, Loader2, Sparkles } from "lucide-react";
 import { Separator } from "../ui/separator";
+import { findSellers } from "@/ai/flows/find-sellers-flow";
+import { v4 as uuidv4 } from 'uuid';
+import { useToast } from "@/hooks/use-toast";
+
 
 const sellerSchema = z.object({
+    id: z.string().optional(),
     name: z.string().min(1, "Seller name is required."),
     address: z.string().optional(),
     phone: z.string().optional(),
@@ -33,6 +38,7 @@ const sellerSchema = z.object({
 });
 
 const attributeSchema = z.object({
+    id: z.string().optional(),
     name: z.string().min(1, "Attribute name is required."),
     value: z.string().min(1, "Attribute value is required."),
 });
@@ -41,7 +47,7 @@ const formSchema = z.object({
   name: z.string().min(2, "Product name is required."),
   model: z.string().min(1, "Model name is required."),
   attributes: z.array(attributeSchema).min(1, "At least one attribute is required."),
-  sellers: z.array(sellerSchema).min(1, "At least one seller is required."),
+  sellers: z.array(sellerSchema),
 });
 
 type ProductFormValues = z.infer<typeof formSchema>;
@@ -54,13 +60,16 @@ interface ProductFormProps {
 }
 
 export function ProductForm({ isOpen, setIsOpen, product, onSave }: ProductFormProps) {
+  const { toast } = useToast();
+  const [isFindingSellers, setIsFindingSellers] = useState(false);
+
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
       model: "",
       attributes: [{ name: "", value: "" }],
-      sellers: [{ name: "", price: 0, isOnline: true }],
+      sellers: [],
     },
   });
 
@@ -75,31 +84,61 @@ export function ProductForm({ isOpen, setIsOpen, product, onSave }: ProductFormP
   });
 
   useEffect(() => {
-    if (product) {
-      form.reset({
-        name: product.name,
-        model: product.model,
-        attributes: product.attributes.map(a => ({ name: a.name, value: a.value })),
-        sellers: product.sellers.map(s => ({ name: s.name, address: s.address, phone: s.phone, price: s.price, isOnline: s.isOnline })),
-      });
-    } else {
+    if (isOpen) {
+        if (product) {
         form.reset({
-            name: "",
-            model: "",
-            attributes: [{ name: "", value: "" }],
-            sellers: [{ name: "", price: 0, isOnline: true }],
+            name: product.name,
+            model: product.model,
+            attributes: product.attributes,
+            sellers: product.sellers,
         });
+        } else {
+            form.reset({
+                name: "",
+                model: "",
+                attributes: [{ name: "", value: "" }],
+                sellers: [],
+            });
+        }
     }
   }, [product, isOpen, form]);
 
+  const handleFindSellers = async () => {
+    const { name, model } = form.getValues();
+    if (!name || !model) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter a Product Name and Model Name first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsFindingSellers(true);
+    try {
+      const result = await findSellers({ productName: name, modelName: model });
+      const sellersWithIds = result.sellers.map(s => ({ ...s, id: uuidv4() }));
+      form.setValue('sellers', sellersWithIds, { shouldValidate: true });
+    } catch (error) {
+      console.error("Error finding sellers:", error);
+      toast({
+        title: "AI Error",
+        description: "Could not fetch sellers at this time. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsFindingSellers(false);
+    }
+  };
+
   const onSubmit = (data: ProductFormValues) => {
     const newProduct: Product = {
-        id: product?.id || `prod_${new Date().getTime()}`,
+        id: product?.id || uuidv4(),
         userId: product?.userId || 'user_123',
         createdAt: product?.createdAt || new Date(),
         ...data,
-        attributes: data.attributes.map((a, i) => ({ ...a, id: product?.attributes[i]?.id || `attr_${i}_${new Date().getTime()}` })),
-        sellers: data.sellers.map((s, i) => ({ ...s, id: product?.sellers[i]?.id || `seller_${i}_${new Date().getTime()}` })),
+        attributes: data.attributes.map(a => ({ ...a, id: a.id || uuidv4() })),
+        sellers: data.sellers.map(s => ({ ...s, id: s.id || uuidv4() })),
     };
     onSave(newProduct);
     setIsOpen(false);
@@ -162,10 +201,19 @@ export function ProductForm({ isOpen, setIsOpen, product, onSave }: ProductFormP
             
             {/* Sellers */}
             <div>
-              <h3 className="text-lg font-medium font-headline mb-2">Sellers</h3>
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-lg font-medium font-headline">Sellers</h3>
+                <Button type="button" variant="outline" size="sm" onClick={handleFindSellers} disabled={isFindingSellers}>
+                  {isFindingSellers ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Sparkles className="mr-2 h-4 w-4 text-accent" />}
+                  Find Sellers with AI
+                </Button>
+              </div>
               <div className="space-y-4">
                 {sellerFields.map((field, index) => (
                   <div key={field.id} className="grid grid-cols-2 gap-4 p-3 bg-secondary/50 rounded-md relative">
+                    <Button type="button" variant="ghost" size="icon" className="absolute top-1 right-1" onClick={() => removeSeller(index)}>
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
                     <FormField name={`sellers.${index}.name`} control={form.control} render={({ field }) => (
                       <FormItem><FormLabel>Seller Name</FormLabel><FormControl><Input placeholder="Amazon" {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
@@ -178,14 +226,14 @@ export function ProductForm({ isOpen, setIsOpen, product, onSave }: ProductFormP
                     <FormField name={`sellers.${index}.phone`} control={form.control} render={({ field }) => (
                       <FormItem><FormLabel>Phone (Optional)</FormLabel><FormControl><Input placeholder="+91..." {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
-                     <Button type="button" variant="ghost" size="icon" className="absolute top-1 right-1" onClick={() => removeSeller(index)} disabled={sellerFields.length <= 1}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
                   </div>
                 ))}
                  <Button type="button" variant="outline" size="sm" onClick={() => appendSeller({ name: "", price: 0 })}>
-                  <PlusCircle className="mr-2 h-4 w-4" /> Add Seller
+                  <PlusCircle className="mr-2 h-4 w-4" /> Add Seller Manually
                 </Button>
+                 {form.formState.errors.sellers && form.getValues('sellers').length === 0 && (
+                  <p className="text-sm font-medium text-destructive">{form.formState.errors.sellers.message}</p>
+                )}
               </div>
             </div>
             </div>

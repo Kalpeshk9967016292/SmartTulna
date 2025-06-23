@@ -16,7 +16,7 @@ export type Seller = {
 export type Product = {
   id: string;
   userId: string;
-  name: string;
+  name:string;
   model: string;
   attributes: Attribute[];
   sellers: Seller[];
