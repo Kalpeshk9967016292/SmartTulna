@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -122,7 +123,14 @@ export function ProductForm({ isOpen, setIsOpen, product, onSave }: ProductFormP
               <FormItem><FormLabel>Product Name</FormLabel><FormControl><Input placeholder="e.g., Samsung Galaxy S23" {...field} /></FormControl><FormMessage /></FormItem>
             )} />
             <FormField name="model" control={form.control} render={({ field }) => (
-              <FormItem><FormLabel>Model Name</FormLabel><FormControl><Input placeholder="e.g., SM-S911B" {...field} /></FormControl><FormMessage /></FormItem>
+              <FormItem>
+                <FormLabel>Model Name</FormLabel>
+                <FormControl><Input placeholder="e.g., SM-S911B" {...field} /></FormControl>
+                <FormDescription>
+                  You can usually find this on the energy rating sticker on most appliances.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
             )} />
 
             <Separator />
