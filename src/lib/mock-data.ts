@@ -14,7 +14,7 @@ export const mockProducts: Product[] = [
       { id: 'attr_1_4', name: 'RAM', value: '8GB' },
     ],
     sellers: [
-      { id: 'seller_1_1', name: 'Amazon', price: 65000, isOnline: true },
+      { id: 'seller_1_1', name: 'Amazon', price: 65000, isOnline: true, link: 'https://www.amazon.in/dp/B0BT9CXXXX' },
       { id: 'seller_1_2', name: 'Vijay Sales', price: 64500, address: 'Mumbai, IN', isOnline: false },
     ],
   },
@@ -31,9 +31,9 @@ export const mockProducts: Product[] = [
       { id: 'attr_2_4', name: 'RAM', value: '6GB' },
     ],
     sellers: [
-      { id: 'seller_2_1', name: 'Flipkart', price: 129900, isOnline: true },
+      { id: 'seller_2_1', name: 'Flipkart', price: 129900, isOnline: true, link: 'https://www.flipkart.com/apple-iphone-14-pro-deep-purple-256-gb/p/itm1a36253f65b3d' },
       { id: 'seller_2_2', name: 'Croma', price: 129000, address: 'Delhi, IN', isOnline: false },
-      { id: 'seller_2_3', name: 'Reliance Digital', price: 129900, isOnline: true },
+      { id: 'seller_2_3', name: 'Reliance Digital', price: 129900, isOnline: true, link: 'https://www.reliancedigital.in/apple-iphone-14-pro-256-gb-deep-purple/p/493177755' },
     ],
   },
   {
@@ -50,7 +50,7 @@ export const mockProducts: Product[] = [
     ],
     sellers: [
         { id: 'seller_3_1', name: 'Sony Center', price: 150000, address: 'Bangalore, IN', isOnline: false },
-        { id: 'seller_3_2', name: 'Amazon', price: 145000, isOnline: true },
+        { id: 'seller_3_2', name: 'Amazon', price: 145000, isOnline: true, link: 'https://www.amazon.in/Sony-Bravia-inches-XR-55A80L-Black/dp/B0BZF5V6B2' },
     ],
   }
 ];

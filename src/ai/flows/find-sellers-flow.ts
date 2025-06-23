@@ -21,6 +21,7 @@ const SellerSchema = z.object({
     price: z.number().describe("The price of the product in INR."),
     isOnline: z.boolean().describe("Whether the seller is online or a physical store."),
     address: z.string().optional().describe("The city and country if it's a physical store."),
+    link: z.string().url().optional().describe("A plausible URL to the product page if the seller is online. Omit for physical stores."),
 });
 
 const FindSellersOutputSchema = z.object({
@@ -42,6 +43,7 @@ const prompt = ai.definePrompt({
 Provide a list of 2 to 4 sellers, including a mix of major online retailers (like Amazon.in, Flipkart, Reliance Digital) and plausible names for local physical stores.
 
 For each seller, provide a realistic price in Indian Rupees (INR).
+For online sellers, include a plausible, but not necessarily real, URL to a product page. For physical stores, the link should be omitted.
 
 Product Name: {{{productName}}}
 Model: {{{modelName}}}

@@ -11,6 +11,7 @@ export type Seller = {
   phone?: string;
   price: number;
   isOnline?: boolean;
+  link?: string;
 };
 
 export type Product = {

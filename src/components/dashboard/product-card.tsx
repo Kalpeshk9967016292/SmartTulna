@@ -100,7 +100,13 @@ export function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
                     <div className="flex items-center gap-2">
                         {seller.isOnline ? <Globe className="h-4 w-4 text-accent"/> : <Store className="h-4 w-4 text-accent"/>}
                         <div>
-                            <span className="font-medium">{seller.name}</span>
+                            {seller.isOnline && seller.link ? (
+                                <a href={seller.link} target="_blank" rel="noopener noreferrer" className="font-medium hover:underline hover:text-primary">
+                                    {seller.name}
+                                </a>
+                            ) : (
+                                <span className="font-medium">{seller.name}</span>
+                            )}
                             <div className="text-xs text-muted-foreground">
                                 {seller.isOnline 
                                     ? <Badge variant="outline" className="border-green-500/50 text-green-600">Online</Badge> 

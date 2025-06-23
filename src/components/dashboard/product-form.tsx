@@ -23,6 +23,7 @@ import { Separator } from "../ui/separator";
 import { findSellers } from "@/ai/flows/find-sellers-flow";
 import { v4 as uuidv4 } from 'uuid';
 import { useToast } from "@/hooks/use-toast";
+import { Switch } from "@/components/ui/switch";
 
 
 const sellerSchema = z.object({
@@ -35,6 +36,7 @@ const sellerSchema = z.object({
       z.number().positive("Price must be positive.")
     ),
     isOnline: z.boolean().default(false),
+    link: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
 });
 
 const attributeSchema = z.object({
@@ -209,26 +211,53 @@ export function ProductForm({ isOpen, setIsOpen, product, onSave }: ProductFormP
                 </Button>
               </div>
               <div className="space-y-4">
-                {sellerFields.map((field, index) => (
-                  <div key={field.id} className="grid grid-cols-2 gap-4 p-3 bg-secondary/50 rounded-md relative">
-                    <Button type="button" variant="ghost" size="icon" className="absolute top-1 right-1" onClick={() => removeSeller(index)}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                    <FormField name={`sellers.${index}.name`} control={form.control} render={({ field }) => (
-                      <FormItem><FormLabel>Seller Name</FormLabel><FormControl><Input placeholder="Amazon" {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                    <FormField name={`sellers.${index}.price`} control={form.control} render={({ field }) => (
-                      <FormItem><FormLabel>Price (INR)</FormLabel><FormControl><Input type="number" placeholder="65000" {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                    <FormField name={`sellers.${index}.address`} control={form.control} render={({ field }) => (
-                      <FormItem><FormLabel>Address (Optional)</FormLabel><FormControl><Input placeholder="Mumbai, IN" {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                    <FormField name={`sellers.${index}.phone`} control={form.control} render={({ field }) => (
-                      <FormItem><FormLabel>Phone (Optional)</FormLabel><FormControl><Input placeholder="+91..." {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                  </div>
-                ))}
-                 <Button type="button" variant="outline" size="sm" onClick={() => appendSeller({ name: "", price: 0 })}>
+                {sellerFields.map((field, index) => {
+                    const isOnline = form.watch(`sellers.${index}.isOnline`);
+                    return (
+                        <div key={field.id} className="space-y-4 p-3 bg-secondary/50 rounded-md relative">
+                            <Button type="button" variant="ghost" size="icon" className="absolute top-1 right-1" onClick={() => removeSeller(index)}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                            <div className="grid grid-cols-2 gap-4">
+                                <FormField name={`sellers.${index}.name`} control={form.control} render={({ field }) => (
+                                <FormItem><FormLabel>Seller Name</FormLabel><FormControl><Input placeholder="Amazon" {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                                <FormField name={`sellers.${index}.price`} control={form.control} render={({ field }) => (
+                                <FormItem><FormLabel>Price (INR)</FormLabel><FormControl><Input type="number" placeholder="65000" {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                            </div>
+                            
+                            <FormField control={form.control} name={`sellers.${index}.isOnline`} render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-between rounded-lg border bg-background p-3">
+                                    <FormLabel>Online Seller</FormLabel>
+                                    <FormControl>
+                                    <Switch
+                                        checked={field.value}
+                                        onCheckedChange={field.onChange}
+                                    />
+                                    </FormControl>
+                                </FormItem>
+                                )}
+                            />
+
+                            {isOnline ? (
+                                <FormField name={`sellers.${index}.link`} control={form.control} render={({ field }) => (
+                                <FormItem><FormLabel>Website Link</FormLabel><FormControl><Input placeholder="https://www.seller.com/product" {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                            ) : (
+                                <div className="grid grid-cols-2 gap-4">
+                                <FormField name={`sellers.${index}.address`} control={form.control} render={({ field }) => (
+                                    <FormItem><FormLabel>Address (Optional)</FormLabel><FormControl><Input placeholder="Mumbai, IN" {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                                <FormField name={`sellers.${index}.phone`} control={form.control} render={({ field }) => (
+                                    <FormItem><FormLabel>Phone (Optional)</FormLabel><FormControl><Input placeholder="+91..." {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                                </div>
+                            )}
+                        </div>
+                    )
+                })}
+                 <Button type="button" variant="outline" size="sm" onClick={() => appendSeller({ name: "", price: 0, isOnline: false, link: "", address: "", phone: "" })}>
                   <PlusCircle className="mr-2 h-4 w-4" /> Add Seller Manually
                 </Button>
                  {form.formState.errors.sellers && form.getValues('sellers').length === 0 && (
