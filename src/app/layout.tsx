@@ -19,7 +19,7 @@ const fontPTSans = PT_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "TulnaSphere",
+  title: "SmartTulna",
   description: "Modern product comparison for smart choices.",
 };
 

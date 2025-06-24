@@ -25,7 +25,7 @@ export function Logo({ className }: { className?: string }) {
           strokeWidth="2"
         />
       </svg>
-      <span className="text-xl font-headline font-semibold">TulnaSphere</span>
+      <span className="text-xl font-headline font-semibold">SmartTulna</span>
     </div>
   );
 }
