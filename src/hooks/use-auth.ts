@@ -11,7 +11,7 @@ import {
     signOut,
     updateProfile as fbUpdateProfile
 } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { auth, isFirebaseConfigured } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 
 // A more detailed user type, you can expand this based on your needs
@@ -31,6 +31,7 @@ interface AuthContextType {
   registerWithEmail: (email: string, pass: string) => Promise<void>;
   logout: () => Promise<void>;
   updateUserProfile: (data: { displayName: string }) => Promise<{ success: boolean; error?: any; }>;
+  isFirebaseConfigured: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -42,6 +43,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
 
   useEffect(() => {
+    if (!isFirebaseConfigured) {
+      setLoading(false);
+      return;
+    }
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseUser | null) => {
       if (firebaseUser) {
         const { uid, email, displayName, photoURL } = firebaseUser;
@@ -98,7 +103,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
         await fbUpdateProfile(auth.currentUser, { displayName: data.displayName });
         // Manually update the user state, as onAuthStateChanged might not fire for profile updates
-        setUser(auth.currentUser);
+        const updatedUser = auth.currentUser;
+        if (updatedUser) {
+            setUser({
+                uid: updatedUser.uid,
+                email: updatedUser.email,
+                displayName: updatedUser.displayName,
+                photoURL: updatedUser.photoURL
+            });
+        }
         setLoading(false);
         return { success: true };
     } catch (err: any) {
@@ -108,7 +121,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
 };
 
-  const value = { user, loading, error, loginWithEmail, loginWithGoogle, registerWithEmail, logout, updateUserProfile };
+  const value = { user, loading, error, loginWithEmail, loginWithGoogle, registerWithEmail, logout, updateUserProfile, isFirebaseConfigured };
 
   return React.createElement(AuthContext.Provider, { value: value }, children);
 };

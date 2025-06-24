@@ -27,7 +27,7 @@ const formSchema = z.object({
 });
 
 export function RegisterForm() {
-    const { registerWithEmail, loading, error } = useAuth();
+    const { registerWithEmail, loading, error, isFirebaseConfigured } = useAuth();
     
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -45,7 +45,15 @@ export function RegisterForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        {error && (
+        {!isFirebaseConfigured ? (
+            <Alert variant="destructive">
+                <Terminal className="h-4 w-4" />
+                <AlertTitle>Configuration Required</AlertTitle>
+                <AlertDescription>
+                   Firebase is not configured. Please provide your project credentials in the <code>.env</code> file to enable authentication.
+                </AlertDescription>
+            </Alert>
+        ) : error && (
             <Alert variant="destructive">
                 <Terminal className="h-4 w-4" />
                 <AlertTitle>Registration Failed</AlertTitle>
@@ -61,7 +69,7 @@ export function RegisterForm() {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input placeholder="name@example.com" {...field} />
+                <Input placeholder="name@example.com" {...field} disabled={!isFirebaseConfigured} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -74,7 +82,7 @@ export function RegisterForm() {
             <FormItem>
               <FormLabel>Password</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="••••••••" {...field} />
+                <Input type="password" placeholder="••••••••" {...field} disabled={!isFirebaseConfigured} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -87,13 +95,13 @@ export function RegisterForm() {
             <FormItem>
               <FormLabel>Confirm Password</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="••••••••" {...field} />
+                <Input type="password" placeholder="••••••••" {...field} disabled={!isFirebaseConfigured} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full" disabled={loading}>
+        <Button type="submit" className="w-full" disabled={loading || !isFirebaseConfigured}>
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Create Account
         </Button>

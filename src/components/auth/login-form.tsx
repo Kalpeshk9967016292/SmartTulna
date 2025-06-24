@@ -26,7 +26,7 @@ const formSchema = z.object({
 });
 
 export function LoginForm() {
-  const { loginWithEmail, loginWithGoogle, loading, error } = useAuth();
+  const { loginWithEmail, loginWithGoogle, loading, error, isFirebaseConfigured } = useAuth();
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -48,7 +48,15 @@ export function LoginForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        {error && (
+        {!isFirebaseConfigured ? (
+            <Alert variant="destructive">
+                <Terminal className="h-4 w-4" />
+                <AlertTitle>Configuration Required</AlertTitle>
+                <AlertDescription>
+                   Firebase is not configured. Please provide your project credentials in the <code>.env</code> file to enable authentication.
+                </AlertDescription>
+            </Alert>
+        ) : error && (
             <Alert variant="destructive">
                 <Terminal className="h-4 w-4" />
                 <AlertTitle>Login Failed</AlertTitle>
@@ -64,7 +72,7 @@ export function LoginForm() {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input placeholder="name@example.com" {...field} />
+                <Input placeholder="name@example.com" {...field} disabled={!isFirebaseConfigured} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -77,13 +85,13 @@ export function LoginForm() {
             <FormItem>
               <FormLabel>Password</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="••••••••" {...field} />
+                <Input type="password" placeholder="••••••••" {...field} disabled={!isFirebaseConfigured} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full" disabled={loading}>
+        <Button type="submit" className="w-full" disabled={loading || !isFirebaseConfigured}>
           {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Login
         </Button>
@@ -93,7 +101,7 @@ export function LoginForm() {
         <span className="mx-4 text-xs text-muted-foreground">OR</span>
         <Separator className="flex-1" />
       </div>
-      <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={loading}>
+      <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={loading || !isFirebaseConfigured}>
         {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 
         <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512"><path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 126 23.4 172.9 61.9l-76.2 64.5C308.6 92.6 280.2 80 248 80c-82.8 0-150.5 67.7-150.5 150.5S165.2 406.5 248 406.5c70.2 0 122.9-32.5 142.2-76.3h-142.2v-100h236.1c2.3 12.7 3.9 26.9 3.9 41.6z"></path></svg>
         }
