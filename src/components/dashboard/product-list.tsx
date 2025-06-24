@@ -81,13 +81,13 @@ export function ProductList() {
             setProducts(currentProducts => currentProducts.map(p => p.id === updated.id ? updated : p));
             toast({ title: "Product Updated", description: "Your product has been successfully updated." });
         } else {
-            const { name, model, attributes, sellers } = productData;
+            const { name, model, attributes, sellers, userId } = productData;
             const newProd = await addProduct({
                 name,
                 model,
                 attributes,
                 sellers,
-                userId: user.uid,
+                userId,
             });
             setProducts(currentProducts => [newProd, ...currentProducts]);
             toast({ title: "Product Added", description: "Your new product has been successfully saved." });
@@ -156,6 +156,7 @@ export function ProductList() {
         setIsOpen={setIsFormOpen}
         product={editingProduct}
         onSave={handleSaveProduct}
+        userId={user?.uid}
       />
     
       {isLoading ? (

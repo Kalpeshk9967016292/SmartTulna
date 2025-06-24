@@ -58,9 +58,10 @@ interface ProductFormProps {
   setIsOpen: (open: boolean) => void;
   product?: Product;
   onSave: (product: Product) => void;
+  userId?: string;
 }
 
-export function ProductForm({ isOpen, setIsOpen, product, onSave }: ProductFormProps) {
+export function ProductForm({ isOpen, setIsOpen, product, onSave, userId }: ProductFormProps) {
   const { toast } = useToast();
   const [showAttributes, setShowAttributes] = useState(false);
 
@@ -111,9 +112,18 @@ export function ProductForm({ isOpen, setIsOpen, product, onSave }: ProductFormP
   }, [product, isOpen, form]);
 
   const onSubmit = (data: ProductFormValues) => {
+    if (!userId) {
+        toast({
+            variant: "destructive",
+            title: "Authentication Error",
+            description: "You must be logged in to save a product.",
+        });
+        return;
+    }
+    
     const newProduct: Product = {
         id: product?.id || uuidv4(),
-        userId: product?.userId || 'user_123',
+        userId: product?.userId || userId,
         createdAt: product?.createdAt || new Date(),
         ...data,
         attributes: data.attributes.map(a => ({ ...a, id: a.id || uuidv4() })),
