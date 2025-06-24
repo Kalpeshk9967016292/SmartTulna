@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Table,
@@ -10,14 +10,40 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { mockProducts } from '@/lib/mock-data';
 import type { Product } from '@/lib/types';
 import { Card, CardContent } from '../ui/card';
-import { Button } from '../ui/button';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
+import { useAuth } from '@/hooks/use-auth';
+import { getProducts } from '@/lib/product-service';
+import { Skeleton } from '../ui/skeleton';
 
 export function ComparisonTable() {
-  const [selectedProducts, setSelectedProducts] = useState<Product[]>(mockProducts.slice(0, 2));
+  const { user } = useAuth();
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (user?.uid) {
+      const fetchProducts = async () => {
+        setIsLoading(true);
+        try {
+          const userProducts = await getProducts(user.uid);
+          setAllProducts(userProducts);
+          setSelectedProducts(userProducts.slice(0, 2));
+        } catch (error) {
+          console.error("Failed to fetch products for comparison", error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchProducts();
+    } else {
+        setAllProducts([]);
+        setSelectedProducts([]);
+        setIsLoading(false);
+    }
+  }, [user]);
 
   const handleSelectProduct = (product: Product, checked: boolean | 'indeterminate') => {
     if (checked) {
@@ -35,28 +61,50 @@ export function ComparisonTable() {
     return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(price);
   };
 
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="p-4">
+            <Skeleton className="h-6 w-1/4 mb-4" />
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-6 w-full" />)}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <Skeleton className="h-96 w-full" />
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <Card>
         <CardContent className="p-4">
             <h3 className="font-headline text-lg mb-2">Select Products to Compare</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {mockProducts.map((product) => (
-                <div key={product.id} className="flex items-center space-x-2">
-                <Checkbox
-                    id={`select-${product.id}`}
-                    checked={selectedProducts.some((p) => p.id === product.id)}
-                    onCheckedChange={(checked) => handleSelectProduct(product, checked)}
-                />
-                <label
-                    htmlFor={`select-${product.id}`}
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                    {product.name}
-                </label>
+            { allProducts.length > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {allProducts.map((product) => (
+                    <div key={product.id} className="flex items-center space-x-2">
+                    <Checkbox
+                        id={`select-${product.id}`}
+                        checked={selectedProducts.some((p) => p.id === product.id)}
+                        onCheckedChange={(checked) => handleSelectProduct(product, checked)}
+                    />
+                    <label
+                        htmlFor={`select-${product.id}`}
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                        {product.name}
+                    </label>
+                    </div>
+                ))}
                 </div>
-            ))}
-            </div>
+            ) : (
+                <p className="text-muted-foreground">You have no products to compare. Add some from the dashboard.</p>
+            )}
         </CardContent>
       </Card>
       

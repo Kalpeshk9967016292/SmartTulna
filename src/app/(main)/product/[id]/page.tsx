@@ -1,12 +1,12 @@
-import { mockProducts } from '@/lib/mock-data';
+import { getProduct } from '@/lib/product-service';
 import { PriceView } from '@/components/product/price-view';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 
-export default function ProductPage({ params }: { params: { id: string } }) {
-  const product = mockProducts.find((p) => p.id === params.id);
+export default async function ProductPage({ params }: { params: { id: string } }) {
+  const product = await getProduct(params.id);
 
   if (!product) {
     notFound();

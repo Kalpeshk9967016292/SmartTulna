@@ -1,21 +1,54 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PlusCircle, ArrowUpDown, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "./product-card";
 import { ProductForm } from "./product-form";
-import { mockProducts } from "@/lib/mock-data";
 import type { Product } from "@/lib/types";
 import { Input } from "../ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import { useAuth } from "@/hooks/use-auth";
+import { getProducts, addProduct, updateProduct, deleteProduct } from "@/lib/product-service";
+import { Skeleton } from "../ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
+
 
 export function ProductList() {
-  const [products, setProducts] = useState<Product[]>(mockProducts);
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | undefined>(undefined);
   const [sortKey, setSortKey] = useState<"name" | "price" | "date">("date");
   const [searchTerm, setSearchTerm] = useState("");
+
+  useEffect(() => {
+    if (user?.uid) {
+      const fetchProducts = async () => {
+        setIsLoading(true);
+        try {
+          const userProducts = await getProducts(user.uid);
+          setProducts(userProducts);
+        } catch (err) {
+          console.error(err);
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Failed to fetch your products.",
+          });
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchProducts();
+    } else {
+        setProducts([]);
+        setIsLoading(false);
+    }
+  }, [user, toast]);
+
 
   const handleAddProduct = () => {
     setEditingProduct(undefined);
@@ -27,15 +60,41 @@ export function ProductList() {
     setIsFormOpen(true);
   };
   
-  const handleDeleteProduct = (productId: string) => {
-    setProducts(products.filter(p => p.id !== productId));
+  const handleDeleteProduct = async (productId: string) => {
+    try {
+        await deleteProduct(productId);
+        setProducts(currentProducts => currentProducts.filter(p => p.id !== productId));
+        toast({ title: "Product Deleted", description: "The product has been successfully removed." });
+    } catch (error) {
+        console.error("Failed to delete product", error);
+        toast({ variant: "destructive", title: "Error", description: "Could not delete the product." });
+    }
   };
 
-  const handleSaveProduct = (product: Product) => {
-    if (editingProduct) {
-      setProducts(products.map(p => p.id === product.id ? product : p));
-    } else {
-      setProducts([product, ...products]);
+  const handleSaveProduct = async (productData: Product) => {
+    if (!user) return;
+
+    try {
+        if (editingProduct) {
+            const { id, name, model, attributes, sellers } = productData;
+            const updated = await updateProduct(id, { name, model, attributes, sellers });
+            setProducts(currentProducts => currentProducts.map(p => p.id === updated.id ? updated : p));
+            toast({ title: "Product Updated", description: "Your product has been successfully updated." });
+        } else {
+            const { name, model, attributes, sellers } = productData;
+            const newProd = await addProduct({
+                name,
+                model,
+                attributes,
+                sellers,
+                userId: user.uid,
+            });
+            setProducts(currentProducts => [newProd, ...currentProducts]);
+            toast({ title: "Product Added", description: "Your new product has been successfully saved." });
+        }
+    } catch (err) {
+        console.error("Failed to save product", err);
+        toast({ variant: "destructive", title: "Error", description: "Could not save the product." });
     }
   };
 
@@ -46,10 +105,11 @@ export function ProductList() {
         return a.name.localeCompare(b.name);
       }
       if (sortKey === "price") {
-        const priceA = Math.min(...a.sellers.map(s => s.price));
-        const priceB = Math.min(...b.sellers.map(s => s.price));
+        const priceA = a.sellers.length > 0 ? Math.min(...a.sellers.map(s => s.price)) : Infinity;
+        const priceB = b.sellers.length > 0 ? Math.min(...b.sellers.map(s => s.price)) : Infinity;
         return priceA - priceB;
       }
+      // @ts-ignore
       return b.createdAt.getTime() - a.createdAt.getTime();
     });
 
@@ -60,7 +120,7 @@ export function ProductList() {
           <h1 className="text-3xl font-bold font-headline">Your Products</h1>
           <p className="text-muted-foreground">Manage and compare your saved products.</p>
         </div>
-        <Button onClick={handleAddProduct} className="w-full md:w-auto">
+        <Button onClick={handleAddProduct} className="w-full md:w-auto" disabled={!user}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Add Product
         </Button>
@@ -74,11 +134,12 @@ export function ProductList() {
             className="pl-10"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            disabled={!user}
           />
         </div>
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="w-full md:w-auto">
+                <Button variant="outline" className="w-full md:w-auto" disabled={!user}>
                     <ArrowUpDown className="mr-2 h-4 w-4" />
                     Sort by: {sortKey.charAt(0).toUpperCase() + sortKey.slice(1)}
                 </Button>
@@ -97,8 +158,20 @@ export function ProductList() {
         product={editingProduct}
         onSave={handleSaveProduct}
       />
-
-      {sortedAndFilteredProducts.length > 0 ? (
+    
+      {isLoading ? (
+        <div className="grid gap-6 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+            {[...Array(3)].map((_, i) => (
+                <div key={i} className="flex flex-col space-y-3">
+                    <Skeleton className="h-[125px] w-full rounded-xl" />
+                    <div className="space-y-2">
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-[80%]" />
+                    </div>
+                </div>
+            ))}
+        </div>
+      ) : sortedAndFilteredProducts.length > 0 ? (
         <div className="grid gap-6 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
             {sortedAndFilteredProducts.map((product) => (
                 <ProductCard 
@@ -111,11 +184,21 @@ export function ProductList() {
         </div>
       ) : (
         <div className="text-center py-16 border-2 border-dashed rounded-lg">
-            <h3 className="text-xl font-medium">No products found</h3>
+            <h3 className="text-xl font-medium">
+                { !user 
+                    ? "Please log in to see your products" 
+                    : "No products found"
+                }
+            </h3>
             <p className="text-muted-foreground mt-2">
-                {searchTerm ? `Your search for "${searchTerm}" did not match any products.` : "Get started by adding a new product."}
+                { !user
+                    ? "Once you log in, your saved products will appear here."
+                    : searchTerm 
+                        ? `Your search for "${searchTerm}" did not match any products.` 
+                        : "Get started by adding a new product."
+                }
             </p>
-            {!searchTerm && <Button onClick={handleAddProduct} className="mt-4">
+            {!searchTerm && user && <Button onClick={handleAddProduct} className="mt-4">
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Add First Product
             </Button>}

@@ -15,11 +15,12 @@ export type Seller = {
 };
 
 export type Product = {
-  id: string;
+  id:string;
   userId: string;
   name:string;
   model: string;
   attributes: Attribute[];
   sellers: Seller[];
   createdAt: Date;
+  updatedAt?: Date;
 };
