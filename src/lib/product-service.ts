@@ -16,18 +16,25 @@ import {
 } from 'firebase/firestore';
 import type { Product } from './types';
 
-type ProductDocumentData = Omit<Product, 'id' | 'createdAt' | 'updatedAt'> & {
-  createdAt: Timestamp;
-  updatedAt?: Timestamp;
-};
-
+// This function is now more robust and will not crash if timestamp fields are missing or malformed from the database.
 function productFromDoc(docSnapshot: any): Product {
-    const data = docSnapshot.data() as ProductDocumentData;
+    const data = docSnapshot.data();
+
+    // Default to current date if createdAt is missing or not a timestamp, preventing crashes during render.
+    const createdAt = (data.createdAt && typeof data.createdAt.toDate === 'function')
+        ? data.createdAt.toDate()
+        : new Date();
+
+    // Safely handle the optional updatedAt field.
+    const updatedAt = (data.updatedAt && typeof data.updatedAt.toDate === 'function')
+        ? data.updatedAt.toDate()
+        : undefined;
+
     return {
         id: docSnapshot.id,
         ...data,
-        createdAt: data.createdAt.toDate(),
-        updatedAt: data.updatedAt?.toDate(),
+        createdAt: createdAt,
+        updatedAt: updatedAt,
     };
 }
 
