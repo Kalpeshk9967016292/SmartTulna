@@ -14,7 +14,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
-import { Loader2 } from "lucide-react";
+import { Loader2, Terminal } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
@@ -26,7 +27,7 @@ const formSchema = z.object({
 });
 
 export function RegisterForm() {
-    const { register, loading } = useAuth();
+    const { registerWithEmail, loading, error } = useAuth();
     
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -37,14 +38,22 @@ export function RegisterForm() {
         },
     });
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        console.log(values);
-        register();
+    async function onSubmit(values: z.infer<typeof formSchema>) {
+        await registerWithEmail(values.email, values.password);
     }
   
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        {error && (
+            <Alert variant="destructive">
+                <Terminal className="h-4 w-4" />
+                <AlertTitle>Registration Failed</AlertTitle>
+                <AlertDescription>
+                    {error}
+                </AlertDescription>
+            </Alert>
+        )}
         <FormField
           control={form.control}
           name="email"

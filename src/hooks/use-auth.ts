@@ -1,9 +1,21 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { 
+    onAuthStateChanged, 
+    User as FirebaseUser,
+    signInWithPopup,
+    GoogleAuthProvider,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    signOut,
+    updateProfile as fbUpdateProfile
+} from 'firebase/auth';
+import { auth } from '@/lib/firebase';
+import { useRouter } from 'next/navigation';
 
-// Mock user type
-interface User {
+// A more detailed user type, you can expand this based on your needs
+export interface User {
   uid: string;
   email: string | null;
   displayName: string | null;
@@ -13,62 +25,90 @@ interface User {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (method: 'email' | 'google') => void;
-  logout: () => void;
-  register: () => void;
+  error: string | null;
+  loginWithEmail: (email: string, pass: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
+  registerWithEmail: (email: string, pass: string) => Promise<void>;
+  logout: () => Promise<void>;
+  updateUserProfile: (data: { displayName: string }) => Promise<{ success: boolean; error?: any; }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock auth functions
-const mockUser: User = {
-  uid: '12345',
-  email: 'user@example.com',
-  displayName: 'Test User',
-  photoURL: 'https://placehold.co/100x100.png',
-};
-
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
-    // Simulate checking auth state on mount
-    const session = sessionStorage.getItem('user');
-    if (session) {
-      setUser(JSON.parse(session));
-    }
-    setLoading(false);
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseUser | null) => {
+      if (firebaseUser) {
+        const { uid, email, displayName, photoURL } = firebaseUser;
+        setUser({ uid, email, displayName, photoURL });
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  const login = (method: 'email' | 'google') => {
+  const handleAuthAction = async (action: () => Promise<any>) => {
     setLoading(true);
-    setTimeout(() => {
-      sessionStorage.setItem('user', JSON.stringify(mockUser));
-      setUser(mockUser);
+    setError(null);
+    try {
+      await action();
+      router.push('/dashboard');
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'An unexpected error occurred.');
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
+  }
+
+  const loginWithEmail = (email: string, pass: string) => 
+    handleAuthAction(() => signInWithEmailAndPassword(auth, email, pass));
+
+  const registerWithEmail = (email: string, pass: string) => 
+    handleAuthAction(() => createUserWithEmailAndPassword(auth, email, pass));
+
+  const loginWithGoogle = () =>
+    handleAuthAction(() => signInWithPopup(auth, new GoogleAuthProvider()));
+
+  const logout = async () => {
+    setLoading(true);
+    await signOut(auth);
+    setUser(null);
+    setLoading(false);
+    router.push('/login');
   };
 
-  const register = () => {
+  const updateUserProfile = async (data: { displayName: string }) => {
     setLoading(true);
-    setTimeout(() => {
-      sessionStorage.setItem('user', JSON.stringify(mockUser));
-      setUser(mockUser);
-      setLoading(false);
-    }, 1000);
-  };
-  
-  const logout = () => {
-    setLoading(true);
-    setTimeout(() => {
-      sessionStorage.removeItem('user');
-      setUser(null);
-      setLoading(false);
-    }, 500);
-  };
+    setError(null);
+    if (!auth.currentUser) {
+        const err = "Not authenticated";
+        setError(err);
+        setLoading(false);
+        return { success: false, error: err };
+    }
+    try {
+        await fbUpdateProfile(auth.currentUser, { displayName: data.displayName });
+        // Manually update the user state, as onAuthStateChanged might not fire for profile updates
+        setUser(auth.currentUser);
+        setLoading(false);
+        return { success: true };
+    } catch (err: any) {
+        setError(err.message);
+        setLoading(false);
+        return { success: false, error: err.message };
+    }
+};
 
-  const value = { user, loading, login, logout, register };
+  const value = { user, loading, error, loginWithEmail, loginWithGoogle, registerWithEmail, logout, updateUserProfile };
 
   return React.createElement(AuthContext.Provider, { value: value }, children);
 };

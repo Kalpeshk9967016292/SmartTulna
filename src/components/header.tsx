@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
-import { LogOut, Menu, Settings, Blocks } from "lucide-react";
+import { LogOut, Menu, Settings, Blocks, User as UserIcon } from "lucide-react";
 import { Logo } from "./logo";
 import { ThemeToggle } from "./theme-toggle";
 import { useState } from "react";
@@ -36,8 +36,8 @@ export function Header() {
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     router.push("/login");
   };
 
@@ -64,10 +64,11 @@ export function Header() {
           <SheetContent side="left" className="w-full max-w-xs p-0">
             <div className="flex h-full flex-col">
               <SheetHeader className="border-b p-4 text-left">
-                <SheetTitle className="sr-only">Menu</SheetTitle>
-                <Link href="/" onClick={() => setIsMobileMenuOpen(false)}>
-                  <Logo />
-                </Link>
+                <SheetTitle>
+                    <Link href="/" onClick={() => setIsMobileMenuOpen(false)}>
+                        <Logo />
+                    </Link>
+                </SheetTitle>
               </SheetHeader>
               <nav className="flex flex-col space-y-2 p-4">
                 <NavLinks mobile onLinkClick={() => setIsMobileMenuOpen(false)} />
@@ -83,7 +84,7 @@ export function Header() {
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={user?.photoURL || ''} alt={user?.displayName || 'User'} data-ai-hint="user avatar" />
-                  <AvatarFallback>{user?.displayName?.charAt(0) || 'U'}</AvatarFallback>
+                  <AvatarFallback>{user?.displayName?.charAt(0) || <UserIcon />}</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
@@ -95,6 +96,10 @@ export function Header() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => router.push('/profile')}>
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Profile</span>
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={handleLogout}>
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Log out</span>

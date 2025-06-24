@@ -16,6 +16,9 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
 import { Separator } from "../ui/separator";
+import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
+import { Terminal } from "lucide-react";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
@@ -23,7 +26,8 @@ const formSchema = z.object({
 });
 
 export function LoginForm() {
-  const { login, loading } = useAuth();
+  const { loginWithEmail, loginWithGoogle, loading, error } = useAuth();
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -33,18 +37,26 @@ export function LoginForm() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    login('email');
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    await loginWithEmail(values.email, values.password);
   }
 
-  function handleGoogleSignIn() {
-    login('google');
+  async function handleGoogleSignIn() {
+    await loginWithGoogle();
   }
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        {error && (
+            <Alert variant="destructive">
+                <Terminal className="h-4 w-4" />
+                <AlertTitle>Login Failed</AlertTitle>
+                <AlertDescription>
+                    {error}
+                </AlertDescription>
+            </Alert>
+        )}
         <FormField
           control={form.control}
           name="email"
