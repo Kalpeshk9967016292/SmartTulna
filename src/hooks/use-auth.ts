@@ -68,7 +68,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       router.push('/dashboard');
     } catch (err: any) {
       console.error(err);
-      setError(err.message || 'An unexpected error occurred.');
+      if (err.code === 'auth/unauthorized-domain') {
+        setError('This domain is not authorized for authentication. For local testing, add "localhost" to the authorized domains in your Firebase console.');
+      } else {
+        setError(err.message || 'An unexpected error occurred.');
+      }
     } finally {
       setLoading(false);
     }
