@@ -1,5 +1,3 @@
-'use server';
-
 import { db, isFirebaseConfigured } from '@/lib/firebase';
 import {
   collection,
