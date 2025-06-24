@@ -19,7 +19,10 @@ const fontPTSans = PT_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "SmartTulna",
+  title: {
+    default: "SmartTulna",
+    template: "%s | SmartTulna",
+  },
   description: "Modern product comparison for smart choices.",
 };
 

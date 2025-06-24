@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
-import { LogOut, Menu, Settings, Blocks, User as UserIcon } from "lucide-react";
+import { LogOut, Menu, Settings, Blocks, User as UserIcon, Info } from "lucide-react";
 import { Logo } from "./logo";
 import { ThemeToggle } from "./theme-toggle";
 import { useState } from "react";
@@ -30,6 +30,7 @@ import { useState } from "react";
 const navLinks = [
   { href: "/dashboard", label: "Dashboard", icon: <Blocks className="h-4 w-4" /> },
   { href: "/compare", label: "Compare", icon: <Settings className="h-4 w-4" /> },
+  { href: "/about", label: "About", icon: <Info className="h-4 w-4" /> },
 ];
 
 export function Header() {
@@ -50,7 +51,7 @@ export function Header() {
             <Logo />
           </Link>
           <nav className="flex items-center space-x-6 text-sm font-medium">
-            <NavLinks />
+            <NavLinks onLinkClick={() => setIsMobileMenuOpen(false)} />
           </nav>
         </div>
 

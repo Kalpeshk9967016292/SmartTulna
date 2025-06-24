@@ -1,4 +1,10 @@
 import { ComparisonTable } from "@/components/compare/comparison-table";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Compare Products",
+  description: "Side-by-side comparison of your selected products.",
+};
 
 export default function ComparePage() {
   return (
