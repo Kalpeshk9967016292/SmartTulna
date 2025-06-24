@@ -109,7 +109,6 @@ export function ProductList() {
         const priceB = b.sellers.length > 0 ? Math.min(...b.sellers.map(s => s.price)) : Infinity;
         return priceA - priceB;
       }
-      // @ts-ignore
       return b.createdAt.getTime() - a.createdAt.getTime();
     });
 

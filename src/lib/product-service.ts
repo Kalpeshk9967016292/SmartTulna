@@ -13,7 +13,6 @@ import {
   getDoc,
   serverTimestamp,
   type Timestamp,
-  orderBy,
 } from 'firebase/firestore';
 import type { Product } from './types';
 
@@ -34,10 +33,11 @@ function productFromDoc(docSnapshot: any): Product {
 
 export async function getProducts(userId: string): Promise<Product[]> {
   if (!isFirebaseConfigured || !userId) return [];
+  // The orderBy clause was removed as it can cause errors if the required
+  // composite index is not configured in Firestore. The client-side already handles sorting.
   const q = query(
     collection(db, 'products'),
-    where('userId', '==', userId),
-    orderBy('createdAt', 'desc')
+    where('userId', '==', userId)
   );
   const querySnapshot = await getDocs(q);
   return querySnapshot.docs.map(productFromDoc);
