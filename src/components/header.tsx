@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -83,7 +84,7 @@ export function Header() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={user?.photoURL || ''} alt={user?.displayName || 'User'} data-ai-hint="user avatar" />
+                  {user?.photoURL && <AvatarImage src={user.photoURL} alt={user.displayName || 'User'} data-ai-hint="user avatar" />}
                   <AvatarFallback>{user?.displayName?.charAt(0) || <UserIcon />}</AvatarFallback>
                 </Avatar>
               </Button>
