@@ -47,7 +47,7 @@ const attributeSchema = z.object({
 const formSchema = z.object({
   name: z.string().min(2, "Product name is required."),
   model: z.string().min(1, "Model name is required."),
-  attributes: z.array(attributeSchema).min(1, "At least one attribute is required."),
+  attributes: z.array(attributeSchema),
   sellers: z.array(sellerSchema),
 });
 
@@ -62,13 +62,14 @@ interface ProductFormProps {
 
 export function ProductForm({ isOpen, setIsOpen, product, onSave }: ProductFormProps) {
   const { toast } = useToast();
+  const [showAttributes, setShowAttributes] = useState(false);
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
       model: "",
-      attributes: [{ name: "", value: "" }],
+      attributes: [],
       sellers: [],
     },
   });
@@ -86,19 +87,25 @@ export function ProductForm({ isOpen, setIsOpen, product, onSave }: ProductFormP
   useEffect(() => {
     if (isOpen) {
         if (product) {
-        form.reset({
-            name: product.name,
-            model: product.model,
-            attributes: product.attributes,
-            sellers: product.sellers,
-        });
+            form.reset({
+                name: product.name,
+                model: product.model,
+                attributes: product.attributes || [],
+                sellers: product.sellers,
+            });
+            if (product.attributes && product.attributes.length > 0) {
+                setShowAttributes(true);
+            } else {
+                setShowAttributes(false);
+            }
         } else {
             form.reset({
                 name: "",
                 model: "",
-                attributes: [{ name: "", value: "" }],
+                attributes: [],
                 sellers: [],
             });
+            setShowAttributes(false);
         }
     }
   }, [product, isOpen, form]);
@@ -146,28 +153,51 @@ export function ProductForm({ isOpen, setIsOpen, product, onSave }: ProductFormP
 
             <Separator />
 
-            {/* Attributes */}
-            <div>
-              <h3 className="text-lg font-medium font-headline mb-2">Attributes</h3>
-              <div className="space-y-4">
-                {attributeFields.map((field, index) => (
-                  <div key={field.id} className="flex gap-2 items-end p-3 bg-secondary/50 rounded-md">
-                    <FormField name={`attributes.${index}.name`} control={form.control} render={({ field }) => (
-                      <FormItem className="flex-1"><FormLabel>Name</FormLabel><FormControl><Input placeholder="Screen Size" {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                    <FormField name={`attributes.${index}.value`} control={form.control} render={({ field }) => (
-                      <FormItem className="flex-1"><FormLabel>Value</FormLabel><FormControl><Input placeholder="6.1 inches" {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                    <Button type="button" variant="ghost" size="icon" onClick={() => removeAttribute(index)} disabled={attributeFields.length <= 1}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
+            {/* Attribute Toggle */}
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border bg-background p-3">
+                <div className="space-y-0.5">
+                    <FormLabel>Add Specific Attributes</FormLabel>
+                    <FormDescription>
+                        Add technical specifications or other details.
+                    </FormDescription>
+                </div>
+                <FormControl>
+                <Switch
+                    checked={showAttributes}
+                    onCheckedChange={(checked) => {
+                        setShowAttributes(checked);
+                        if (checked && attributeFields.length === 0) {
+                            appendAttribute({ name: '', value: '' });
+                        } else if (!checked) {
+                            form.setValue('attributes', []);
+                        }
+                    }}
+                />
+                </FormControl>
+            </FormItem>
+
+            {/* Attributes Section */}
+            {showAttributes && (
+                <div className="space-y-4">
+                    {attributeFields.map((field, index) => (
+                    <div key={field.id} className="flex gap-2 items-end p-3 bg-secondary/50 rounded-md">
+                        <FormField name={`attributes.${index}.name`} control={form.control} render={({ field }) => (
+                        <FormItem className="flex-1"><FormLabel>Name</FormLabel><FormControl><Input placeholder="Screen Size" {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField name={`attributes.${index}.value`} control={form.control} render={({ field }) => (
+                        <FormItem className="flex-1"><FormLabel>Value</FormLabel><FormControl><Input placeholder="6.1 inches" {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <Button type="button" variant="ghost" size="icon" onClick={() => removeAttribute(index)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                    </div>
+                    ))}
+                    <Button type="button" variant="outline" size="sm" onClick={() => appendAttribute({ name: "", value: "" })}>
+                    <PlusCircle className="mr-2 h-4 w-4" /> Add Attribute
                     </Button>
-                  </div>
-                ))}
-                <Button type="button" variant="outline" size="sm" onClick={() => appendAttribute({ name: "", value: "" })}>
-                  <PlusCircle className="mr-2 h-4 w-4" /> Add Attribute
-                </Button>
-              </div>
-            </div>
+                </div>
+            )}
+
 
             <Separator />
             
