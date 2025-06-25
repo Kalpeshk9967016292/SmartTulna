@@ -39,7 +39,7 @@ export function PriceView({ product }: PriceViewProps) {
         style: 'currency',
         currency: 'INR',
         maximumFractionDigits: 0,
-        }).format(price);
+        }).format(price).replace('₹', 'Rs.');
     };
 
     const chartData = sortedSellers.map(seller => ({
@@ -122,7 +122,7 @@ export function PriceView({ product }: PriceViewProps) {
                             <CartesianGrid vertical={false} />
                             <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8} />
                             <YAxis 
-                                tickFormatter={(value) => `₹${Number(value) / 1000}k`}
+                                tickFormatter={(value) => `Rs.${Number(value) / 1000}k`}
                                 tickLine={false}
                                 axisLine={false}
                             />

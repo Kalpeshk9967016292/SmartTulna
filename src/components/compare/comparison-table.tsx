@@ -58,7 +58,7 @@ export function ComparisonTable() {
   
   const formatPrice = (price: number | undefined) => {
     if (price === undefined) return <span className="text-muted-foreground">-</span>;
-    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(price);
+    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(price).replace('₹', 'Rs.');
   };
 
   if (isLoading) {
