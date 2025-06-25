@@ -7,13 +7,13 @@ import AuthProvider from "@/components/auth-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 
 const fontPoppins = Poppins({
-  subsets: ["latin", "devanagari"],
+  subsets: ["latin", "latin-ext"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-poppins",
 });
 
 const fontPTSans = PT_Sans({
-  subsets: ["latin", "devanagari"],
+  subsets: ["latin", "latin-ext"],
   weight: ["400", "700"],
   variable: "--font-pt-sans",
 });
