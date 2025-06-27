@@ -23,7 +23,6 @@ import { Separator } from "../ui/separator";
 import { v4 as uuidv4 } from 'uuid';
 import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
-import Image from "next/image";
 
 
 const sellerSchema = z.object({
@@ -158,16 +157,6 @@ export function ProductForm({ isOpen, setIsOpen, product, onSave, userId }: Prod
                 <FormDescription>
                   You can usually find this on the energy rating sticker on most appliances.
                 </FormDescription>
-                <div className="mt-2">
-                    <Image
-                        src="https://i.ibb.co/9vPzZz8/model-name-hint.png"
-                        alt="Example of a model name on an energy efficiency label"
-                        width={453}
-                        height={287}
-                        className="rounded-md border"
-                        data-ai-hint="energy label"
-                    />
-                </div>
                 <FormMessage />
               </FormItem>
             )} />
