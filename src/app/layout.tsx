@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     default: "SmartTulna",
     template: "%s | SmartTulna",
   },
-  description: "Modern product comparison for smart choices.",
+  description: "The smartest way to compare products. SmartTulna lets you compare any two products, side-by-side, based on online and local prices.",
 };
 
 export default function RootLayout({
