@@ -21,12 +21,12 @@ export function HeroSection() {
                 </div>
                 <div className='hidden md:block'>
                     <Image 
-                        src="https://placehold.co/600x400.png" 
-                        alt="Product comparison dashboard interface" 
+                        src="https://storage.googleapis.com/project-spark-b6b02.appspot.com/static/29ce459a-58b2-4d2c-81b4-7b79a554a72d" 
+                        alt="Illustration of people comparing products online" 
                         width={600} 
                         height={400} 
                         className="rounded-lg shadow-xl" 
-                        data-ai-hint="product comparison dashboard" 
+                        data-ai-hint="online shopping" 
                     />
                 </div>
             </div>
