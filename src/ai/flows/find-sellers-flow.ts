@@ -15,7 +15,7 @@ import {z} from 'zod';
 const SellerSchema = z.object({
   name: z.string().describe('The name of the online store.'),
   price: z.number().describe('The price of the product in INR. Must be a number, without currency symbols.'),
-  link: z.string().url().describe('A direct URL to the product page.'),
+  link: z.string().describe('A direct URL to the product page.'),
 });
 
 const FindSellersInputSchema = z.object({
