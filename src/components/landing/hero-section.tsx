@@ -21,7 +21,7 @@ export function HeroSection() {
                 </div>
                 <div className='hidden md:block'>
                     <Image 
-                        src="https://storage.googleapis.com/project-spark-b6b02.appspot.com/static/29ce459a-58b2-4d2c-81b4-7b79a554a72d" 
+                        src="https://iamtiksha.com/img/smarttulna_hp.png" 
                         alt="Illustration of people comparing products online" 
                         width={600} 
                         height={400} 
