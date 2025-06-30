@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/toaster";
 import AuthProvider from "@/components/auth-provider";
 import { ThemeProvider } from "@/components/theme-provider";
+import GoogleAnalytics from "@/components/google-analytics";
 
 const fontPoppins = Poppins({
   subsets: ["latin", "latin-ext"],
@@ -52,6 +53,7 @@ export default function RootLayout({
             <Toaster />
           </AuthProvider>
         </ThemeProvider>
+        <GoogleAnalytics />
       </body>
     </html>
   );
