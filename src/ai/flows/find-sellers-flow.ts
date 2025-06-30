@@ -18,13 +18,13 @@ const SellerSchema = z.object({
   link: z.string().url().describe('A direct URL to the product page.'),
 });
 
-export const FindSellersInputSchema = z.object({
+const FindSellersInputSchema = z.object({
   productName: z.string().describe('The name of the product, e.g., "Samsung Galaxy S23".'),
   model: z.string().describe('The model number of the product, e.g., "SM-S911B".'),
 });
 export type FindSellersInput = z.infer<typeof FindSellersInputSchema>;
 
-export const FindSellersOutputSchema = z.object({
+const FindSellersOutputSchema = z.object({
   sellers: z.array(SellerSchema).describe('A list of online sellers found for the product.'),
 });
 export type FindSellersOutput = z.infer<typeof FindSellersOutputSchema>;
