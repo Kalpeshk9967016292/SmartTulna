@@ -96,7 +96,7 @@ export function PriceView({ product }: PriceViewProps) {
                                             <div className="text-xs text-muted-foreground">
                                                 {seller.isOnline 
                                                     ? <Badge variant="outline" className="border-green-500/50 text-green-600">Online</Badge> 
-                                                    : <Badge variant="outline" className="border-blue-500/50 text-blue-600">Local</Badge>
+                                                    : <Badge variant="outline" className="border-blue-500/50 text-blue-600">Local (Private)</Badge>
                                                 }
                                             </div>
                                         </div>

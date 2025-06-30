@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import type { Product } from '@/lib/types';
+import type { Product, Seller, Attribute } from '@/lib/types';
 import { Card, CardContent } from '../ui/card';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import { useAuth } from '@/hooks/use-auth';
@@ -114,7 +114,7 @@ export function ComparisonTable() {
           <Table className="min-w-max">
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[200px] font-headline text-base sticky left-0 bg-card">Feature</TableHead>
+                <TableHead className="w-[200px] font-headline text-base sticky left-0 bg-card z-10">Feature</TableHead>
                 {selectedProducts.map((product) => (
                   <TableHead key={product.id} className="font-headline text-base">
                     {product.name}
@@ -125,11 +125,11 @@ export function ComparisonTable() {
             </TableHeader>
             <TableBody>
               <TableRow className="bg-secondary/50 hover:bg-secondary/50">
-                  <TableCell colSpan={selectedProducts.length + 1} className="font-bold text-primary">Key Attributes</TableCell>
+                  <TableCell colSpan={selectedProducts.length + 1} className="font-bold text-primary sticky left-0 bg-secondary/50 z-10">Key Attributes</TableCell>
               </TableRow>
               {allAttributes.map((attrName) => (
                 <TableRow key={attrName}>
-                  <TableCell className="font-medium sticky left-0 bg-card">{attrName}</TableCell>
+                  <TableCell className="font-medium sticky left-0 bg-card z-10">{attrName}</TableCell>
                   {selectedProducts.map((product) => {
                     const attr = product.attributes.find((a) => a.name === attrName);
                     return <TableCell key={product.id}>{attr?.value || <span className="text-muted-foreground">-</span>}</TableCell>;
@@ -138,11 +138,11 @@ export function ComparisonTable() {
               ))}
 
               <TableRow className="bg-secondary/50 hover:bg-secondary/50">
-                  <TableCell colSpan={selectedProducts.length + 1} className="font-bold text-primary">Prices</TableCell>
+                  <TableCell colSpan={selectedProducts.length + 1} className="font-bold text-primary sticky left-0 bg-secondary/50 z-10">Prices</TableCell>
               </TableRow>
               {allSellers.map((sellerName) => (
                 <TableRow key={sellerName}>
-                  <TableCell className="font-medium sticky left-0 bg-card">{sellerName}</TableCell>
+                  <TableCell className="font-medium sticky left-0 bg-card z-10">{sellerName}</TableCell>
                   {selectedProducts.map((product) => {
                     const seller = product.sellers.find((s) => s.name === sellerName);
                     return <TableCell key={product.id}>{formatPrice(seller?.price)}</TableCell>;

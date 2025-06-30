@@ -18,6 +18,7 @@ export default function ProductPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // The ID from the URL is the userProductId
   const id = typeof params.id === 'string' ? params.id : '';
 
   useEffect(() => {
@@ -49,10 +50,11 @@ export default function ProductPage() {
       try {
         const fetchedProduct = await getProduct(id);
         if (fetchedProduct) {
+            // Service layer now combines public and private data,
+            // but we still verify the user owns this specific userProduct link.
             if (fetchedProduct.userId === user.uid) {
                 setProduct(fetchedProduct);
             } else {
-                // This prevents users from accessing other users' product pages via direct URL.
                 setError("You do not have permission to view this product.");
             }
         } else {

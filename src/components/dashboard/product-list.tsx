@@ -9,10 +9,9 @@ import type { Product } from "@/lib/types";
 import { Input } from "../ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { useAuth } from "@/hooks/use-auth";
-import { getProducts, addProduct, updateProduct, deleteProduct } from "@/lib/product-service";
+import { getProducts, saveProduct, deleteProduct } from "@/lib/product-service";
 import { Skeleton } from "../ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-
 
 export function ProductList() {
   const { user } = useAuth();
@@ -24,28 +23,29 @@ export function ProductList() {
   const [sortKey, setSortKey] = useState<"name" | "price" | "date">("date");
   const [searchTerm, setSearchTerm] = useState("");
 
+  const fetchProducts = async (uid: string) => {
+    setIsLoading(true);
+    try {
+      const userProducts = await getProducts(uid);
+      setProducts(userProducts);
+    } catch (err) {
+      console.error(err);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to fetch your products.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (user?.uid) {
-      const fetchProducts = async () => {
-        setIsLoading(true);
-        try {
-          const userProducts = await getProducts(user.uid);
-          setProducts(userProducts);
-        } catch (err) {
-          console.error(err);
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Failed to fetch your products.",
-          });
-        } finally {
-          setIsLoading(false);
-        }
-      };
-      fetchProducts();
+      fetchProducts(user.uid);
     } else {
-        setProducts([]);
-        setIsLoading(false);
+      setProducts([]);
+      setIsLoading(false);
     }
   }, [user, toast]);
 
@@ -60,14 +60,14 @@ export function ProductList() {
     setIsFormOpen(true);
   };
   
-  const handleDeleteProduct = async (productId: string) => {
+  const handleDeleteProduct = async (userProductId: string) => {
     try {
-        await deleteProduct(productId);
-        setProducts(currentProducts => currentProducts.filter(p => p.id !== productId));
-        toast({ title: "Product Deleted", description: "The product has been successfully removed." });
+        await deleteProduct(userProductId);
+        setProducts(currentProducts => currentProducts.filter(p => p.id !== userProductId));
+        toast({ title: "Product Removed", description: "The product has been successfully removed from your list." });
     } catch (error) {
         console.error("Failed to delete product", error);
-        toast({ variant: "destructive", title: "Error", description: "Could not delete the product." });
+        toast({ variant: "destructive", title: "Error", description: "Could not remove the product." });
     }
   };
 
@@ -75,23 +75,10 @@ export function ProductList() {
     if (!user) return;
 
     try {
-        if (editingProduct) {
-            const { id, name, model, attributes, sellers } = productData;
-            const updated = await updateProduct(id, { name, model, attributes, sellers });
-            setProducts(currentProducts => currentProducts.map(p => p.id === updated.id ? updated : p));
-            toast({ title: "Product Updated", description: "Your product has been successfully updated." });
-        } else {
-            const { name, model, attributes, sellers, userId } = productData;
-            const newProd = await addProduct({
-                name,
-                model,
-                attributes,
-                sellers,
-                userId,
-            });
-            setProducts(currentProducts => [newProd, ...currentProducts]);
-            toast({ title: "Product Added", description: "Your new product has been successfully saved." });
-        }
+        await saveProduct(productData, user.uid);
+        toast({ title: "Product Saved", description: "Your product has been successfully saved." });
+        // Refresh the entire list to ensure data consistency
+        fetchProducts(user.uid);
     } catch (err) {
         console.error("Failed to save product", err);
         toast({ variant: "destructive", title: "Error", description: "Could not save the product." });

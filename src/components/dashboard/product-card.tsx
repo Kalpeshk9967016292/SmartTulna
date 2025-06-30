@@ -70,8 +70,8 @@ export function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
                             <AlertDialogHeader>
                             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                             <AlertDialogDescription>
-                                This action cannot be undone. This will permanently delete the product
-                                "{product.name}" and all its data.
+                                This action cannot be undone. This will permanently remove the product
+                                "{product.name}" from your list. Other users' data will not be affected.
                             </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
@@ -110,7 +110,7 @@ export function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
                             <div className="text-xs text-muted-foreground">
                                 {seller.isOnline 
                                     ? <Badge variant="outline" className="border-green-500/50 text-green-600">Online</Badge> 
-                                    : <Badge variant="outline" className="border-blue-500/50 text-blue-600">Local</Badge>
+                                    : <Badge variant="outline" className="border-blue-500/50 text-blue-600">Local (Private)</Badge>
                                 }
                             </div>
                         </div>

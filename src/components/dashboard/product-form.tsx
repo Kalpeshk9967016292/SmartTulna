@@ -17,17 +17,18 @@ import {
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import type { Product } from "@/lib/types";
-import { PlusCircle, Trash2, Loader2, WandSparkles } from "lucide-react";
+import type { Product, Seller } from "@/lib/types";
+import { PlusCircle, Trash2, Loader2 } from "lucide-react";
 import { Separator } from "../ui/separator";
 import { v4 as uuidv4 } from 'uuid';
 import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
-import { findSellers } from "@/ai/flows/find-sellers-flow";
+import { findPublicProductByModel } from "@/lib/product-service";
+import { useDebounce } from "use-debounce";
 
 
 const sellerSchema = z.object({
-    id: z.string().optional(),
+    id: z.string(),
     name: z.string().min(1, "Seller name is required."),
     address: z.string().optional(),
     phone: z.string().optional(),
@@ -40,12 +41,14 @@ const sellerSchema = z.object({
 });
 
 const attributeSchema = z.object({
-    id: z.string().optional(),
+    id: z.string(),
     name: z.string().min(1, "Attribute name is required."),
     value: z.string().min(1, "Attribute value is required."),
 });
 
 const formSchema = z.object({
+  id: z.string().optional(),
+  publicProductId: z.string().optional(),
   name: z.string().min(2, "Product name is required."),
   model: z.string().min(1, "Model name is required."),
   attributes: z.array(attributeSchema),
@@ -58,14 +61,14 @@ interface ProductFormProps {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
   product?: Product;
-  onSave: (product: Product) => void;
+  onSave: (product: ProductFormValues) => void;
   userId?: string;
 }
 
 export function ProductForm({ isOpen, setIsOpen, product, onSave, userId }: ProductFormProps) {
   const { toast } = useToast();
   const [showAttributes, setShowAttributes] = useState(false);
-  const [isFindingSellers, setIsFindingSellers] = useState(false);
+  const [isLookingUp, setIsLookingUp] = useState(false);
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(formSchema),
@@ -77,7 +80,7 @@ export function ProductForm({ isOpen, setIsOpen, product, onSave, userId }: Prod
     },
   });
 
-  const { fields: attributeFields, append: appendAttribute, remove: removeAttribute } = useFieldArray({
+  const { fields: attributeFields, append: appendAttribute, remove: removeAttribute, update: updateAttribute } = useFieldArray({
     control: form.control,
     name: "attributes",
   });
@@ -87,14 +90,44 @@ export function ProductForm({ isOpen, setIsOpen, product, onSave, userId }: Prod
     name: "sellers",
   });
 
+  const modelValue = form.watch('model');
+  const [debouncedModel] = useDebounce(modelValue, 500);
+
+  useEffect(() => {
+    if (debouncedModel && !form.getValues('id')) { // Only lookup for new products
+      const lookupProduct = async () => {
+        setIsLookingUp(true);
+        const existingProduct = await findPublicProductByModel(debouncedModel);
+        if (existingProduct) {
+          form.setValue('name', existingProduct.name);
+          form.setValue('publicProductId', existingProduct.id);
+          
+          const existingSellers = form.getValues('sellers').map(s => s.link);
+          const newSellers = existingProduct.onlineSellers.filter((s: Seller) => !existingSellers.includes(s.link));
+          appendSeller(newSellers);
+
+          const existingAttributes = form.getValues('attributes').map(a => a.name);
+          const newAttributes = existingProduct.attributes.filter((a: any) => !existingAttributes.includes(a.name));
+          appendAttribute(newAttributes);
+
+          toast({
+            title: "Product Found!",
+            description: "We've pre-filled some information for you."
+          });
+        }
+        setIsLookingUp(false);
+      }
+      lookupProduct();
+    }
+  }, [debouncedModel]);
+
   useEffect(() => {
     if (isOpen) {
         if (product) {
             form.reset({
-                name: product.name,
-                model: product.model,
-                attributes: product.attributes || [],
-                sellers: product.sellers,
+                ...product,
+                sellers: product.sellers.map(s => ({ ...s, id: s.id || uuidv4()})),
+                attributes: product.attributes.map(a => ({ ...a, id: a.id || uuidv4()}))
             });
             if (product.attributes && product.attributes.length > 0) {
                 setShowAttributes(true);
@@ -107,6 +140,8 @@ export function ProductForm({ isOpen, setIsOpen, product, onSave, userId }: Prod
                 model: "",
                 attributes: [],
                 sellers: [],
+                id: undefined,
+                publicProductId: undefined,
             });
             setShowAttributes(false);
         }
@@ -123,71 +158,8 @@ export function ProductForm({ isOpen, setIsOpen, product, onSave, userId }: Prod
         return;
     }
     
-    const newProduct: Product = {
-        id: product?.id || uuidv4(),
-        userId: product?.userId || userId,
-        createdAt: product?.createdAt || new Date(),
-        ...data,
-        attributes: data.attributes.map(a => ({ ...a, id: a.id || uuidv4() })),
-        sellers: data.sellers.map(s => ({ ...s, id: s.id || uuidv4() })),
-    };
-    onSave(newProduct);
+    onSave(data);
     setIsOpen(false);
-  };
-
-  const handleAIFindSellers = async () => {
-    const productName = form.getValues("name");
-    const model = form.getValues("model");
-
-    if (!productName || !model) {
-      toast({
-        variant: "destructive",
-        title: "Missing Information",
-        description: "Please enter a product name and model first.",
-      });
-      return;
-    }
-
-    setIsFindingSellers(true);
-    try {
-      const result = await findSellers({ productName, model });
-      if (result && result.sellers.length > 0) {
-        let addedCount = 0;
-        result.sellers.forEach(seller => {
-          const sellerExists = form.getValues('sellers').some(s => s.name.toLowerCase() === seller.name.toLowerCase());
-          if (!sellerExists) {
-              appendSeller({
-                  id: uuidv4(),
-                  name: seller.name,
-                  price: seller.price,
-                  link: seller.link,
-                  isOnline: true,
-                  address: '',
-                  phone: ''
-              });
-              addedCount++;
-          }
-        });
-        toast({
-          title: "Sellers Found!",
-          description: `Added ${addedCount} new online seller(s).`,
-        });
-      } else {
-        toast({
-          title: "No Sellers Found",
-          description: "The AI couldn't find any online sellers for this product.",
-        });
-      }
-    } catch (error) {
-      console.error("AI find sellers error:", error);
-      toast({
-        variant: "destructive",
-        title: "AI Error",
-        description: "Something went wrong while searching for sellers.",
-      });
-    } finally {
-      setIsFindingSellers(false);
-    }
   };
   
   return (
@@ -196,7 +168,7 @@ export function ProductForm({ isOpen, setIsOpen, product, onSave, userId }: Prod
         <DialogHeader>
           <DialogTitle className="font-headline">{product ? "Edit Product" : "Add a New Product"}</DialogTitle>
           <DialogDescription>
-            {product ? "Update the details for your product." : "Fill in the details to add a new product for comparison."}
+            {product ? "Update the details for your product." : "Fill in the details. If the model exists, we'll autofill public data."}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -210,9 +182,12 @@ export function ProductForm({ isOpen, setIsOpen, product, onSave, userId }: Prod
             <FormField name="model" control={form.control} render={({ field }) => (
               <FormItem>
                 <FormLabel>Model Name</FormLabel>
-                <FormControl><Input placeholder="e.g., SM-S911B" {...field} /></FormControl>
+                 <div className="relative">
+                    <FormControl><Input placeholder="e.g., SM-S911B" {...field} /></FormControl>
+                    {isLookingUp && <Loader2 className="absolute right-3 top-2.5 h-5 w-5 animate-spin text-muted-foreground" />}
+                </div>
                 <FormDescription>
-                  You can usually find this on the energy rating sticker on most appliances.
+                  This is used to find existing product data.
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -225,7 +200,7 @@ export function ProductForm({ isOpen, setIsOpen, product, onSave, userId }: Prod
                 <div className="space-y-0.5">
                     <FormLabel>Add Specific Attributes</FormLabel>
                     <FormDescription>
-                        Add technical specifications or other details.
+                        Contribute technical specs to the public product.
                     </FormDescription>
                 </div>
                 <FormControl>
@@ -234,9 +209,7 @@ export function ProductForm({ isOpen, setIsOpen, product, onSave, userId }: Prod
                     onCheckedChange={(checked) => {
                         setShowAttributes(checked);
                         if (checked && attributeFields.length === 0) {
-                            appendAttribute({ name: '', value: '' });
-                        } else if (!checked) {
-                            form.setValue('attributes', []);
+                            appendAttribute({ id: uuidv4(), name: '', value: '' });
                         }
                     }}
                 />
@@ -259,7 +232,7 @@ export function ProductForm({ isOpen, setIsOpen, product, onSave, userId }: Prod
                         </Button>
                     </div>
                     ))}
-                    <Button type="button" variant="outline" size="sm" onClick={() => appendAttribute({ name: "", value: "" })}>
+                    <Button type="button" variant="outline" size="sm" onClick={() => appendAttribute({ id: uuidv4(), name: "", value: "" })}>
                     <PlusCircle className="mr-2 h-4 w-4" /> Add Attribute
                     </Button>
                 </div>
@@ -271,6 +244,7 @@ export function ProductForm({ isOpen, setIsOpen, product, onSave, userId }: Prod
             {/* Sellers */}
             <div>
               <h3 className="text-lg font-medium font-headline mb-2">Sellers</h3>
+              <p className="text-sm text-muted-foreground mb-4">Online sellers are public. Local sellers are private to you.</p>
               <div className="space-y-4">
                 {sellerFields.map((field, index) => {
                     const isOnline = form.watch(`sellers.${index}.isOnline`);
@@ -319,16 +293,11 @@ export function ProductForm({ isOpen, setIsOpen, product, onSave, userId }: Prod
                     )
                 })}
                 <div className="flex flex-wrap gap-2">
-                    <Button type="button" variant="outline" size="sm" onClick={() => appendSeller({ name: "", price: 0, isOnline: false, link: "", address: "", phone: "" })}>
-                        <PlusCircle className="mr-2 h-4 w-4" /> Add Seller Manually
+                    <Button type="button" variant="outline" size="sm" onClick={() => appendSeller({ id: uuidv4(), name: "", price: 0, isOnline: false, link: "", address: "", phone: "" })}>
+                        <PlusCircle className="mr-2 h-4 w-4" /> Add Local Seller
                     </Button>
-                    <Button type="button" variant="outline" size="sm" onClick={handleAIFindSellers} disabled={isFindingSellers || !form.watch('name') || !form.watch('model')}>
-                        {isFindingSellers ? (
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        ) : (
-                            <WandSparkles className="mr-2 h-4 w-4 text-accent" />
-                        )}
-                        AI Find Sellers
+                     <Button type="button" variant="outline" size="sm" onClick={() => appendSeller({ id: uuidv4(), name: "", price: 0, isOnline: true, link: "", address: "", phone: "" })}>
+                        <PlusCircle className="mr-2 h-4 w-4" /> Add Online Seller
                     </Button>
                 </div>
                  {form.formState.errors.sellers && form.getValues('sellers').length === 0 && (
