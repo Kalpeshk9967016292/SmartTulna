@@ -4,18 +4,18 @@ import { DatabaseZap, Scale, Store } from "lucide-react";
 const features = [
     {
         icon: <Scale className="h-8 w-8 text-primary" />,
-        title: "Compare Anything",
-        description: "From gadgets to groceries, add any two products and see a detailed side-by-side comparison based on attributes you define."
+        title: "Side-by-Side Comparison",
+        description: "Select any products from your list to see a detailed, side-by-side comparison of their attributes and prices."
     },
     {
         icon: <Store className="h-8 w-8 text-primary" />,
         title: "Online & Local Prices",
-        description: "Bridge the gap between e-commerce and local shops. Track prices from your favorite online retailer alongside a quote from a neighborhood store."
+        description: "Compare public, community-sourced online prices alongside your own private quotes from local shops, all in one view."
     },
     {
         icon: <DatabaseZap className="h-8 w-8 text-primary" />,
-        title: "You're in Control",
-        description: "You decide what to compare. No sponsored placements, no confusing jargon. Just the data you need to make an informed decision."
+        title: "Collaborative Database",
+        description: "Save time with a shared public library of products. If a product exists, its details are pre-filled for you instantly."
     }
 ];
 

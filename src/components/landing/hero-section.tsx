@@ -11,8 +11,8 @@ export function HeroSection() {
         <section className="py-20 md:py-32 bg-secondary/30">
             <div className="container mx-auto grid md:grid-cols-2 gap-12 items-center">
                 <div className="space-y-6 text-center md:text-left">
-                    <h1 className="text-4xl md:text-5xl font-bold font-headline text-primary">The Smartest Way to Compare Products.</h1>
-                    <p className="text-lg md:text-xl text-muted-foreground">Stop guessing. Start comparing. SmartTulna gives you the power to compare any two products on your own terms, tracking prices from both online and local sellers.</p>
+                    <h1 className="text-4xl md:text-5xl font-bold font-headline text-primary">The Community-Powered Product Comparison Tool.</h1>
+                    <p className="text-lg md:text-xl text-muted-foreground">Stop wasting time on data entry. Find products added by the community, or be the first to contribute. Track public online prices alongside your private local quotes to make the smartest decision.</p>
                     <Button asChild size="lg" className="text-lg">
                         <Link href={user ? "/dashboard" : "/login"}>
                             Get Started - It's Free

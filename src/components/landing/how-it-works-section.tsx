@@ -3,18 +3,18 @@ import { Card, CardContent } from "@/components/ui/card";
 const steps = [
     {
         step: 1,
-        title: "Add a Product",
-        description: "Enter the product name and model. Add specific attributes you care about, like 'Screen Size' or 'Warranty'."
+        title: "Find or Add a Product",
+        description: "Enter a model number. If it's in our public database, we'll pre-fill the details. If not, you can add it and help the next person."
     },
     {
         step: 2,
-        title: "Add Sellers & Prices",
-        description: "Log prices from online links or quotes from local shops. You can mark each seller as 'Online' or 'Local'."
+        title: "Add Your Private Prices",
+        description: "The community helps maintain online seller links. You just add your private quotes from local shops—this data is only visible to you."
     },
     {
         step: 3,
         title: "Compare & Decide",
-        description: "View your products in a clean, side-by-side table or a visual chart to find the best deal and make the smartest choice."
+        description: "View your products side-by-side. Compare community-sourced online prices with your local quotes to find the best deal."
     }
 ]
 

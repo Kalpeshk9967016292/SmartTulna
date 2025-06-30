@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export const metadata: Metadata = {
   title: 'About Us',
-  description: 'Learn about SmartTulna, our mission to simplify product comparison, and the team behind this innovative tool.',
+  description: 'Learn about SmartTulna, our mission to build a community-powered product comparison tool, and the team behind it.',
 };
 
 export default function AboutPage() {
@@ -13,7 +13,7 @@ export default function AboutPage() {
         <header className="text-center">
           <h1 className="text-4xl font-bold font-headline text-primary">About SmartTulna</h1>
           <p className="mt-4 text-xl text-muted-foreground">
-            Empowering you to make smarter, more informed decisions.
+            Building a better way to compare, together.
           </p>
         </header>
 
@@ -23,10 +23,10 @@ export default function AboutPage() {
           </CardHeader>
           <CardContent className="space-y-4 text-lg">
             <p>
-              In a world flooded with options, making the right choice can be overwhelming. SmartTulna was born from a simple idea: what if you could compare any two products, side-by-side, based on the criteria that matter most to *you*? Not just the manufacturer's specs, but real-world prices from different sellers, both online and local.
+              In a world flooded with options, making the right choice is overwhelming. What if we could pool our collective knowledge to make it easier for everyone? SmartTulna was born from this simple idea: a shared, public database of product information, built by the community, for the community.
             </p>
             <p>
-              Our mission is to cut through the noise and provide a clear, unbiased comparison platform. We empower you to track prices, compare features, and ultimately find the best value for your money. Whether you're comparing smartphones, washing machines, or laptops, SmartTulna is your personal guide to intelligent shopping.
+              Our mission is to centralize product specifications and online prices, cutting through marketing jargon and sponsored content. By contributing and using this shared data, everyone can make smarter, faster, and more informed purchasing decisions. Your local price quotes, however, always remain private to you.
             </p>
           </CardContent>
         </Card>
@@ -37,10 +37,10 @@ export default function AboutPage() {
             </CardHeader>
             <CardContent className="space-y-4">
                  <p>
-                    <strong>Total Control:</strong> You decide what products to compare and what attributes are important. No sponsored placements, no confusing jargon.
+                    <strong>Community-Powered:</strong> Benefit from a growing database of products added by users like you. When you add a product, you help everyone. When you look one up, you benefit from the community's work.
                 </p>
                 <p>
-                    <strong>Local & Online:</strong> We bridge the gap between e-commerce and local stores. Track prices from your favorite online retailer alongside a quote from your neighborhood shop.
+                    <strong>Public & Private, Separated:</strong> We clearly separate public data (specs, online prices) from your private data (local quotes). Compare openly available information alongside your confidential prices, all in one place.
                 </p>
                 <p>
                     <strong>Price Over Time:</strong> (Coming Soon!) Our future price tracking feature will help you decide the best time to buy, saving you even more.
