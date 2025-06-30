@@ -18,11 +18,12 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { Product } from "@/lib/types";
-import { PlusCircle, Trash2, Loader2 } from "lucide-react";
+import { PlusCircle, Trash2, Loader2, WandSparkles } from "lucide-react";
 import { Separator } from "../ui/separator";
 import { v4 as uuidv4 } from 'uuid';
 import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
+import { findSellers } from "@/ai/flows/find-sellers-flow";
 
 
 const sellerSchema = z.object({
@@ -64,6 +65,7 @@ interface ProductFormProps {
 export function ProductForm({ isOpen, setIsOpen, product, onSave, userId }: ProductFormProps) {
   const { toast } = useToast();
   const [showAttributes, setShowAttributes] = useState(false);
+  const [isFindingSellers, setIsFindingSellers] = useState(false);
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(formSchema),
@@ -131,6 +133,61 @@ export function ProductForm({ isOpen, setIsOpen, product, onSave, userId }: Prod
     };
     onSave(newProduct);
     setIsOpen(false);
+  };
+
+  const handleAIFindSellers = async () => {
+    const productName = form.getValues("name");
+    const model = form.getValues("model");
+
+    if (!productName || !model) {
+      toast({
+        variant: "destructive",
+        title: "Missing Information",
+        description: "Please enter a product name and model first.",
+      });
+      return;
+    }
+
+    setIsFindingSellers(true);
+    try {
+      const result = await findSellers({ productName, model });
+      if (result && result.sellers.length > 0) {
+        let addedCount = 0;
+        result.sellers.forEach(seller => {
+          const sellerExists = form.getValues('sellers').some(s => s.name.toLowerCase() === seller.name.toLowerCase());
+          if (!sellerExists) {
+              appendSeller({
+                  id: uuidv4(),
+                  name: seller.name,
+                  price: seller.price,
+                  link: seller.link,
+                  isOnline: true,
+                  address: '',
+                  phone: ''
+              });
+              addedCount++;
+          }
+        });
+        toast({
+          title: "Sellers Found!",
+          description: `Added ${addedCount} new online seller(s).`,
+        });
+      } else {
+        toast({
+          title: "No Sellers Found",
+          description: "The AI couldn't find any online sellers for this product.",
+        });
+      }
+    } catch (error) {
+      console.error("AI find sellers error:", error);
+      toast({
+        variant: "destructive",
+        title: "AI Error",
+        description: "Something went wrong while searching for sellers.",
+      });
+    } finally {
+      setIsFindingSellers(false);
+    }
   };
   
   return (
@@ -261,9 +318,19 @@ export function ProductForm({ isOpen, setIsOpen, product, onSave, userId }: Prod
                         </div>
                     )
                 })}
-                 <Button type="button" variant="outline" size="sm" onClick={() => appendSeller({ name: "", price: 0, isOnline: false, link: "", address: "", phone: "" })}>
-                  <PlusCircle className="mr-2 h-4 w-4" /> Add Seller Manually
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                    <Button type="button" variant="outline" size="sm" onClick={() => appendSeller({ name: "", price: 0, isOnline: false, link: "", address: "", phone: "" })}>
+                        <PlusCircle className="mr-2 h-4 w-4" /> Add Seller Manually
+                    </Button>
+                    <Button type="button" variant="outline" size="sm" onClick={handleAIFindSellers} disabled={isFindingSellers || !form.watch('name') || !form.watch('model')}>
+                        {isFindingSellers ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                            <WandSparkles className="mr-2 h-4 w-4 text-accent" />
+                        )}
+                        AI Find Sellers
+                    </Button>
+                </div>
                  {form.formState.errors.sellers && form.getValues('sellers').length === 0 && (
                   <p className="text-sm font-medium text-destructive">{form.formState.errors.message}</p>
                 )}
