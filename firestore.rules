@@ -1,0 +1,19 @@
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Public product data can be read by any authenticated user.
+    // Authenticated users can create and update public products to contribute data.
+    // Deletion is disallowed from the client to prevent data loss.
+    match /publicProducts/{productId} {
+      allow read, create, update: if request.auth != null;
+      allow delete: if false;
+    }
+
+    // A user can only access their own list of products.
+    // The `userId` on the document must match the logged-in user's UID.
+    match /userProducts/{userProductId} {
+      allow read, create, update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+  }
+}
