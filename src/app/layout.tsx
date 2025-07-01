@@ -25,6 +25,21 @@ export const metadata: Metadata = {
     template: "%s | SmartTulna",
   },
   description: "The smartest way to compare products. SmartTulna lets you compare any two products, side-by-side, based on online and local prices.",
+  manifest: "/site.webmanifest",
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon-96x96.png", type: "image/png", sizes: "96x96" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: {
+      url: "/apple-touch-icon.png",
+      sizes: "180x180",
+    },
+  },
+  appleWebApp: {
+    title: "SmartTulna",
+  },
 };
 
 export default function RootLayout({
@@ -34,7 +49,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head />
       <body
         className={cn(
           "min-h-screen bg-background font-body antialiased",
