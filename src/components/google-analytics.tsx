@@ -20,8 +20,8 @@ export default function GoogleAnalytics() {
     const pathname = usePathname();
 
     useEffect(() => {
-        // The initial pageview is fired by the script itself.
-        // Subsequent pageviews are fired here.
+        // This useEffect will now handle the initial pageview as well as
+        // subsequent pageviews on navigation.
         pageview(pathname);
     }, [pathname]);
 
@@ -44,9 +44,7 @@ export default function GoogleAnalytics() {
                         window.dataLayer = window.dataLayer || [];
                         function gtag(){dataLayer.push(arguments);}
                         gtag('js', new Date());
-                        gtag('config', '${GA_ID}', {
-                            page_path: window.location.pathname,
-                        });
+                        gtag('config', '${GA_ID}');
                     `,
                 }}
             />
