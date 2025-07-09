@@ -196,7 +196,7 @@ export function ProductForm({ isOpen, setIsOpen, product, onSave, userId }: Prod
             <Separator />
 
             {/* Attribute Toggle */}
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border bg-background p-3">
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border bg-background p-3" id="tour-attributes-toggle">
                 <div className="space-y-0.5">
                     <FormLabel>Add Specific Attributes</FormLabel>
                     <FormDescription>
@@ -243,7 +243,7 @@ export function ProductForm({ isOpen, setIsOpen, product, onSave, userId }: Prod
             
             {/* Sellers */}
             <div>
-              <h3 className="text-lg font-medium font-headline mb-2">Sellers</h3>
+              <h3 id="tour-sellers-heading" className="text-lg font-medium font-headline mb-2">Sellers</h3>
               <p className="text-sm text-muted-foreground mb-4">Online sellers are public. Local sellers are private to you.</p>
               <div className="space-y-4">
                 {sellerFields.map((field, index) => {

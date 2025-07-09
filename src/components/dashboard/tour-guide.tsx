@@ -30,9 +30,9 @@ export function TourGuide() {
                 if (movingTo === 'next') {
                     (document.getElementById('add-product-btn') as HTMLElement)?.click();
                     // Give dialog time to animate
-                    setTimeout(() => createDriver().moveNext(), 400); 
+                    setTimeout(() => driverObj.moveNext(), 400); 
                 } else {
-                    createDriver().moveNext();
+                    driverObj.moveNext();
                 }
               }
           },
@@ -45,7 +45,7 @@ export function TourGuide() {
             }
           },
           {
-            element: 'label[for="react-aria-:R2mqkqcbqH1:-form-item"] ~ div', // A bit fragile, targets the switch container
+            element: '#tour-attributes-toggle',
             popover: {
                 title: '3. Contribute to the Community',
                 description: 'You can add technical specifications like screen size or RAM. This information is shared publicly and helps everyone make better decisions.',
@@ -53,7 +53,7 @@ export function TourGuide() {
             }
           },
           {
-            element: 'h3:text-lg', // Targets the "Sellers" heading
+            element: '#tour-sellers-heading',
             popover: {
                 title: '4. Track Prices',
                 description: 'Add online seller links (which are public) and your private local quotes (which only you can see). This is the key to finding the best deal.',
@@ -73,17 +73,17 @@ export function TourGuide() {
                         closeButton.click();
                     }
                      // Give dialog time to animate out
-                    setTimeout(() => createDriver().moveNext(), 400);
+                    setTimeout(() => driverObj.moveNext(), 400);
                 } else {
-                    createDriver().moveNext();
+                    driverObj.moveNext();
                 }
               },
               onPrevClick: (element, step, { movingTo }) => {
                   if (movingTo === 'previous') {
                       (document.getElementById('add-product-btn') as HTMLElement)?.click();
-                      setTimeout(() => createDriver().movePrevious(), 400);
+                      setTimeout(() => driverObj.movePrevious(), 400);
                   } else {
-                    createDriver().movePrevious();
+                    driverObj.movePrevious();
                   }
               }
           },
@@ -104,6 +104,8 @@ export function TourGuide() {
     });
   }
 
+  const driverObj = createDriver();
+
   useEffect(() => {
     try {
       const tourCompleted = localStorage.getItem(TOUR_STORAGE_KEY);
@@ -111,7 +113,7 @@ export function TourGuide() {
       
       if (tourCompleted !== 'true' && productListExists) {
         const timer = setTimeout(() => {
-          createDriver().drive();
+          driverObj.drive();
         }, 500); 
         return () => clearTimeout(timer);
       }
@@ -121,11 +123,7 @@ export function TourGuide() {
   }, []);
 
   const handleStartTour = () => {
-    // Reset driver state and start from the beginning
-    driver({
-      showProgress: true,
-      steps: createDriver().getConfig().steps
-    }).drive();
+    driverObj.drive();
   }
 
   return (
