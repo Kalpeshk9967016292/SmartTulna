@@ -1,3 +1,4 @@
+
 "use client";
 
 import { driver } from "driver.js";
@@ -120,6 +121,7 @@ export function TourGuide() {
     } catch (e) {
       console.error("Failed to access localStorage for tour status.", e);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleStartTour = () => {
