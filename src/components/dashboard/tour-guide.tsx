@@ -5,7 +5,7 @@ import { Button } from "../ui/button";
 import { Route } from "lucide-react";
 import { useEffect } from "react";
 
-const TOUR_STORAGE_KEY = 'smarttulna_tour_completed_v2'; // Changed key to reset for existing users
+const TOUR_STORAGE_KEY = 'smarttulna_tour_completed_v2';
 
 export function TourGuide() {
 
@@ -26,43 +26,71 @@ export function TourGuide() {
                   title: '1. Add a Product', 
                   description: 'Let\'s start by adding a new product to your personal list. I\'ll open the form for you.'
               },
-              onNextClick: () => {
-                // Programmatically open the form for the next step
-                (document.getElementById('add-product-btn') as HTMLElement)?.click();
-                createDriver().moveNext();
+              onNextClick: (element, step, { movingTo }) => {
+                if (movingTo === 'next') {
+                    (document.getElementById('add-product-btn') as HTMLElement)?.click();
+                    // Give dialog time to animate
+                    setTimeout(() => createDriver().moveNext(), 400); 
+                } else {
+                    createDriver().moveNext();
+                }
               }
           },
           {
-            element: 'form', // Target the form inside the now-open dialog
+            element: 'input[name="model"]',
             popover: {
-                title: '2. Fill in the Details',
-                description: 'Enter the product name and model. If the model exists in our public database, we\'ll autofill specs for you! You can also add sellers here.'
-            },
-            onPrevClick: () => {
-                // If user goes back, close the dialog
-                document.querySelector('button[aria-label="Close"]')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-                createDriver().movePrevious();
+                title: '2. Start with the Model',
+                description: 'Enter the product\'s model number here. If another user has already added it, we will automatically fill in the public specs for you!',
+                side: "bottom",
+            }
+          },
+          {
+            element: 'label[for="react-aria-:R2mqkqcbqH1:-form-item"] ~ div', // A bit fragile, targets the switch container
+            popover: {
+                title: '3. Contribute to the Community',
+                description: 'You can add technical specifications like screen size or RAM. This information is shared publicly and helps everyone make better decisions.',
+                side: "bottom",
+            }
+          },
+          {
+            element: 'h3:text-lg', // Targets the "Sellers" heading
+            popover: {
+                title: '4. Track Prices',
+                description: 'Add online seller links (which are public) and your private local quotes (which only you can see). This is the key to finding the best deal.',
+                side: "top",
             }
           },
           { 
               element: '#product-list-container', 
               popover: { 
-                  title: '3. See Your Products', 
-                  description: 'Your saved products will appear here. You can see key details and edit or delete them at any time.' 
+                  title: '5. See Your Products', 
+                  description: 'After saving, your products will appear here. You can see key details and edit or delete them at any time.' 
               },
-              onNextClick: () => {
-                // Close the dialog if it's open before moving on
-                const closeButton = document.querySelector('button[aria-label="Close"]') as HTMLElement;
-                if (closeButton) {
-                    closeButton.click();
+              onNextClick: (element, step, { movingTo }) => {
+                if (movingTo === 'next') {
+                    const closeButton = document.querySelector('button[aria-label="Close"]') as HTMLElement;
+                    if (closeButton) {
+                        closeButton.click();
+                    }
+                     // Give dialog time to animate out
+                    setTimeout(() => createDriver().moveNext(), 400);
+                } else {
+                    createDriver().moveNext();
                 }
-                createDriver().moveNext();
+              },
+              onPrevClick: (element, step, { movingTo }) => {
+                  if (movingTo === 'previous') {
+                      (document.getElementById('add-product-btn') as HTMLElement)?.click();
+                      setTimeout(() => createDriver().movePrevious(), 400);
+                  } else {
+                    createDriver().movePrevious();
+                  }
               }
           },
           {
               element: '#main-compare-link',
               popover: {
-                  title: '4. Compare Products',
+                  title: '6. Compare Products',
                   description: 'After adding a few products, click here to see a detailed side-by-side comparison of prices and features.'
               }
           },
@@ -79,7 +107,6 @@ export function TourGuide() {
   useEffect(() => {
     try {
       const tourCompleted = localStorage.getItem(TOUR_STORAGE_KEY);
-      // Only run tour if there are products to avoid pointing at an empty space
       const productListExists = document.getElementById('product-list-container');
       
       if (tourCompleted !== 'true' && productListExists) {
@@ -94,7 +121,11 @@ export function TourGuide() {
   }, []);
 
   const handleStartTour = () => {
-    createDriver().drive();
+    // Reset driver state and start from the beginning
+    driver({
+      showProgress: true,
+      steps: createDriver().getConfig().steps
+    }).drive();
   }
 
   return (
