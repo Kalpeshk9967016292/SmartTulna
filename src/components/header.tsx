@@ -22,16 +22,16 @@ import {
 } from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
-import { LogOut, Menu, Settings, Blocks, User as UserIcon, Info } from "lucide-react";
+import { LogOut, Menu, Settings, Blocks, User as UserIcon, Info, GitCompare } from "lucide-react";
 import { Logo } from "./logo";
 import { ThemeToggle } from "./theme-toggle";
 import { useState } from "react";
 import { Skeleton } from "./ui/skeleton";
 
 const navLinks = [
-  { href: "/dashboard", label: "Dashboard", icon: <Blocks className="h-4 w-4" /> },
-  { href: "/compare", label: "Compare", icon: <Settings className="h-4 w-4" /> },
-  { href: "/about", label: "About", icon: <Info className="h-4 w-4" /> },
+  { id: "main-dashboard-link", href: "/dashboard", label: "Dashboard", icon: <Blocks className="h-4 w-4" /> },
+  { id: "main-compare-link", href: "/compare", label: "Compare", icon: <GitCompare className="h-4 w-4" /> },
+  { id: "main-about-link", href: "/about", label: "About", icon: <Info className="h-4 w-4" /> },
 ];
 
 export function Header() {
@@ -128,9 +128,10 @@ function NavLinks({ mobile = false, onLinkClick }: { mobile?: boolean, onLinkCli
   const pathname = usePathname();
   return (
     <>
-      {navLinks.map(({ href, label, icon }) => (
+      {navLinks.map(({ id, href, label, icon }) => (
         <Link
           key={href}
+          id={id}
           href={href}
           onClick={onLinkClick}
           className={cn(

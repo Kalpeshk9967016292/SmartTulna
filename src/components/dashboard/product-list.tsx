@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { PlusCircle, ArrowUpDown, Search } from "lucide-react";
+import { PlusCircle, ArrowUpDown, Search, Route } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "./product-card";
 import { ProductForm } from "./product-form";
@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { getProducts, saveProduct, deleteProduct } from "@/lib/product-service";
 import { Skeleton } from "../ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { TourGuide } from "./tour-guide";
 
 export function ProductList() {
   const { user } = useAuth();
@@ -106,10 +107,13 @@ export function ProductList() {
           <h1 className="text-3xl font-bold font-headline">Your Products</h1>
           <p className="text-muted-foreground">Manage and compare your saved products.</p>
         </div>
-        <Button onClick={handleAddProduct} className="w-full md:w-auto" disabled={!user}>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Add Product
-        </Button>
+        <div className="flex gap-2">
+            <TourGuide />
+            <Button id="add-product-btn" onClick={handleAddProduct} className="w-full md:w-auto" disabled={!user}>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Add Product
+            </Button>
+        </div>
       </div>
 
       <div className="flex flex-col md:flex-row gap-2">
@@ -159,7 +163,7 @@ export function ProductList() {
             ))}
         </div>
       ) : sortedAndFilteredProducts.length > 0 ? (
-        <div className="grid gap-6 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-6 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3" id="product-list-container">
             {sortedAndFilteredProducts.map((product) => (
                 <ProductCard 
                     key={product.id} 
